@@ -21,6 +21,8 @@ The contract, the simulator, and the token rules were not changed. This pass rep
 
 `frontend/components/Hands.tsx` is the old flat SVG pair. Nothing imports it. It was left in place.
 
+The product routes are separate pages, not only sections of the landing page: `/how-it-works`, `/commitment`, `/paperhands-index`, `/epoch/[id]`, `/economy`, `/explorer`, `/lab`, `/rules`, and `/faq`. They share `frontend/components/PageChrome.tsx`. The commitment page keeps the disclosure checkbox and the same five contract methods. The lab page still labels every scenario as a simulation.
+
 No dependency was added. Motion is CSS.
 
 ## Responsive behavior

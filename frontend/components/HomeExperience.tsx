@@ -153,7 +153,7 @@ export function HomeExperience() {
             </p>
             <div className="toggle">
               <Link className="on" href="/commitment">Join Diamond Commitment</Link>
-              <a className="off" href="#how">Explore How It Works</a>
+              <Link className="off" href="/how-it-works">Explore How It Works</Link>
             </div>
             <p className="mt-4 text-sm text-cream/80">
               {wallet.accountId

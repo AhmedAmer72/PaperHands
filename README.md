@@ -50,7 +50,7 @@ docs/                    rules, invariants, Sybil limits, deploy notes, visual a
 design-reference/        Phamily Pharma files kept for analysis, not used by the app
 ```
 
-Pages: `/`, `/commitment`, `/paperhands-index`, `/epoch/[id]`, `/economy`, `/explorer`, `/lab`, `/rules`. The lab chart is labeled SIMULATION. It is not Testnet history.
+Pages: `/`, `/how-it-works`, `/commitment`, `/paperhands-index`, `/epoch/[id]`, `/economy`, `/explorer`, `/lab`, `/rules`, `/faq`. The lab chart is labeled SIMULATION. It is not Testnet history.
 
 ## Status of this build
 
