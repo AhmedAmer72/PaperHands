@@ -16,7 +16,7 @@ Covers the ten-row retention table (25/25, 25/22, 25/20, 25/19, 32/26, 32/25, 40
 cd contracts/paperhands && cargo test --test test_basics --offline -- --test-threads=1 --nocapture
 ```
 
-Three tests: penalty and claims, an empty epoch plus the demo clock against a production clock, and a 25-account success followed by a four-account epoch whose bonus remainder is 1 unit. The wasm build sets `no_wasmopt` because binaryen is not installed. This suite downloads or reuses a local NEAR sandbox and takes about ten minutes.
+Three tests: penalty and claims, an empty epoch plus the demo clock against a production clock, and a 25-account success followed by a four-account epoch whose bonus remainder is 1 unit. The wasm build sets `no_wasmopt` because binaryen is not installed. `scripts/build-contract.sh` passes the same `--no-wasmopt` flag. This suite downloads or reuses a local NEAR sandbox and takes about ten minutes.
 
 ## Simulator
 

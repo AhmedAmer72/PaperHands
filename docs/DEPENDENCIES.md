@@ -10,7 +10,7 @@ Pinned on 10 November 2026. Both NEAR crates are exact versions on the same mino
 | `near-sandbox` | `=0.4.0` | Integration tests. `near-workspaces` is not a dependency. |
 | `near-api` | `=0.8.7` | Sandbox transactions and views. |
 | `cargo-near-build` | `=0.11.5` | Sandbox builds the wasm with `no_wasmopt` because binaryen is not installed in this environment. |
-| `cargo-near` | `0.23.0` | Used by `cargo near new` and `scripts/build-contract.sh`. |
+| `cargo-near` | `0.23.0` | Used by `cargo near new` and `scripts/build-contract.sh`. The script passes `--no-wasmopt`, the same skip as the sandbox build. |
 | `tokio` | `1.12.0` (full) | Sandbox runtime. |
 | `testresult` | `0.4.1` | Sandbox test error type. |
 | `@hot-labs/near-connect` | `0.12.0` | Wallet. `@near-wallet-selector` is not a dependency. |
