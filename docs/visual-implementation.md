@@ -21,6 +21,8 @@ The contract, the simulator, and the token rules were not changed. This pass rep
 
 `frontend/components/Hands.tsx` is the old flat SVG pair. Nothing imports it. It was left in place.
 
+The landing illustrations are the supplied line drawings in `frontend/public/assets/paperhands/illustrations/` (bill, diamond, handshake, lock, fist bump), with the black field removed. They scale in and the cards rise, stagger, and settle on a slight tilt, using the same cubic-bezier as the reference. Motion is skipped when the visitor prefers reduced motion.
+
 The product routes are separate pages, not only sections of the landing page: `/how-it-works`, `/commitment`, `/paperhands-index`, `/epoch/[id]`, `/economy`, `/explorer`, `/lab`, `/rules`, and `/faq`. They share `frontend/components/PageChrome.tsx`. The commitment page keeps the disclosure checkbox and the same five contract methods. The lab page still labels every scenario as a simulation.
 
 No dependency was added. Motion is CSS.

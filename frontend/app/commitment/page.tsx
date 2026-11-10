@@ -88,7 +88,7 @@ export default function CommitmentPage() {
       <div className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
         <article className="card overflow-hidden p-6">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img alt="" className="ml-auto h-36 w-auto" height={802} src="/assets/paperhands/paper-hand/hero.webp" width={539} />
+          <img alt="" className="card-art" height={1024} src="/assets/paperhands/illustrations/bill.png" width={764} />
           <h2 className="font-display text-4xl">Paper hands</h2>
           <ul className="mt-4 space-y-2 text-ink/80">
             <li>Leave after the entry window and before the epoch ends.</li>
@@ -98,7 +98,7 @@ export default function CommitmentPage() {
         </article>
         <article className="card forest overflow-hidden p-6 text-cream">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img alt="" className="ml-auto h-36 w-auto" height={994} src="/assets/paperhands/diamond-hand/hero.webp" width={711} />
+          <img alt="" className="card-art" height={1024} src="/assets/paperhands/illustrations/diamond.png" width={824} />
           <h2 className="font-display text-4xl">Diamond hands</h2>
           <ul className="mt-4 space-y-2 text-cream/85">
             <li>Stay through the epoch.</li>

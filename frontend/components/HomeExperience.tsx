@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import {
   type CurrentEpoch,
   type EpochDetail,
@@ -47,6 +47,23 @@ export function HomeExperience() {
     const stored = JSON.parse(window.localStorage.getItem("paperhands.txs") || "[]") as LocalTx[];
     setLocalTxs(stored);
   }, [wallet.accountId]);
+
+  useEffect(() => {
+    const nodes = Array.from(document.querySelectorAll<HTMLElement>("[data-reveal]"));
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      nodes.forEach((node) => node.classList.add("is-inview"));
+      return;
+    }
+    const observer = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        entry.target.classList.add("is-inview");
+        observer.unobserve(entry.target);
+      }
+    }, { threshold: 0.18, rootMargin: "0px 0px -6% 0px" });
+    nodes.forEach((node) => observer.observe(node));
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     if (contractReady()) return;
@@ -123,25 +140,16 @@ export function HomeExperience() {
       <section className="mx-auto max-w-[1200px]">
         <div className="hero-card">
           <div className="hero-hands" aria-hidden>
-            {/* Decorative hero art. CSS controls the responsive size. */}
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              alt=""
-              className="hand hand-paper"
-              height={802}
-              src="/assets/paperhands/paper-hand/hero.webp"
-              width={539}
-            />
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              alt=""
-              className="hand hand-diamond"
-              height={994}
-              src="/assets/paperhands/diamond-hand/hero.webp"
-              width={711}
-            />
+            <div className="hand hand-paper" data-reveal="hand" style={wait(0.15)}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img alt="" height={1024} src="/assets/paperhands/illustrations/bill.png" width={764} />
+            </div>
+            <div className="hand hand-diamond" data-reveal="hand" style={wait(0.4)}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img alt="" height={1024} src="/assets/paperhands/illustrations/diamond.png" width={824} />
+            </div>
           </div>
-          <div className="hero-copy relative z-10 mx-auto max-w-3xl text-center">
+          <div className="hero-copy relative z-10 mx-auto max-w-3xl text-center" data-reveal="soft">
             <p className="text-sm font-semibold text-lime">Don&apos;t just hold. Prove it.</p>
             <h1 className="display mt-4">
               Weak hands.
@@ -172,32 +180,40 @@ export function HomeExperience() {
       </section>
 
       <section className="mx-auto mt-20 max-w-[1100px]" id="community">
-        <p className="eyebrow text-center">Live community</p>
+        <div className="text-center" data-reveal="soft">
+          <div className="mx-auto w-fit" data-reveal="hand">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img alt="" className="h-44 w-auto" height={757} src="/assets/paperhands/illustrations/handshake.png" width={764} />
+          </div>
+          <p className="eyebrow mt-2">Live community</p>
         <h2 className="display-md mt-3 text-center">
           The cohort, <span className="marker">not a guess</span>
         </h2>
         <p className="mx-auto mt-4 max-w-2xl text-center text-ink/75">
           These figures are contract views. If the contract is not connected, the cells stay empty. Nothing here is a sample community.
         </p>
+        </div>
         <div className="mt-8 grid gap-4 md:grid-cols-3">
-          <Metric label="Original participants" value={last?.original_participants?.toString() ?? "not finalized"} note="Frozen when the entry window closed" />
-          <Metric label="Active participants" value={currentDetail ? String(currentDetail.active_participants) : "—"} note="Accounts still committed in the current epoch" />
-          <Metric label="Retention rate" value={last?.retention_bps != null ? `${(last.retention_bps / 100).toFixed(2)}%` : "not settled"} note="Last finalized epoch" />
-          <Metric label="Locked PAPER" value={paper(books?.locked_principal)} note="Principal sitting in the contract" />
-          <Metric label="Current streak" value={epoch ? String(epoch.current_streak) : "—"} note="Resets when an epoch fails" />
-          <Metric label="Longest streak" value={epoch ? String(epoch.longest_streak) : "—"} note="Highest run stored on the contract" />
+          <Metric delay={0} label="Original participants" value={last?.original_participants?.toString() ?? "not finalized"} note="Frozen when the entry window closed" />
+          <Metric delay={0.08} label="Active participants" value={currentDetail ? String(currentDetail.active_participants) : "—"} note="Accounts still committed in the current epoch" />
+          <Metric delay={0.16} label="Retention rate" value={last?.retention_bps != null ? `${(last.retention_bps / 100).toFixed(2)}%` : "not settled"} note="Last finalized epoch" />
+          <Metric delay={0.24} label="Locked PAPER" value={paper(books?.locked_principal)} note="Principal sitting in the contract" />
+          <Metric delay={0.32} label="Current streak" value={epoch ? String(epoch.current_streak) : "—"} note="Resets when an epoch fails" />
+          <Metric delay={0.4} label="Longest streak" value={epoch ? String(epoch.longest_streak) : "—"} note="Highest run stored on the contract" />
         </div>
       </section>
 
       <section className="mx-auto mt-24 max-w-[1100px]" id="commitment">
+        <div data-reveal="soft">
         <p className="eyebrow">Diamond commitment</p>
         <h2 className="display-md mt-3">
           Paper hands pay. <span className="marker">Diamond hands earn.</span>
         </h2>
+        </div>
         <div className="mt-8 grid gap-4 lg:grid-cols-2">
-          <article className="card overflow-hidden p-6">
+          <article className="card p-6" data-reveal="tilt">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img alt="" className="ml-auto h-40 w-auto" height={802} src="/assets/paperhands/paper-hand/hero.webp" width={539} />
+            <img alt="" className="card-art" height={1024} src="/assets/paperhands/illustrations/bill.png" width={764} />
             <h3 className="mt-2 font-display text-4xl">Paper hands</h3>
             <ul className="mt-4 space-y-2 text-ink/80">
               <li>Leave after the entry window.</li>
@@ -205,9 +221,9 @@ export function HomeExperience() {
               <li>Lose reward eligibility for that epoch.</li>
             </ul>
           </article>
-          <article className="card forest overflow-hidden p-6 text-cream">
+          <article className="card forest p-6 text-cream" data-reveal="tilt-right" style={wait(0.12)}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img alt="" className="ml-auto h-40 w-auto" height={994} src="/assets/paperhands/diamond-hand/hero.webp" width={711} />
+            <img alt="" className="card-art" height={1024} src="/assets/paperhands/illustrations/diamond.png" width={824} />
             <h3 className="mt-2 font-display text-4xl">Diamond hands</h3>
             <ul className="mt-4 space-y-2 text-cream/85">
               <li>Remain committed through the epoch.</li>
@@ -218,13 +234,13 @@ export function HomeExperience() {
           </article>
         </div>
         <dl className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          <Rule term="Commitment" value="1,000 PAPER" />
-          <Rule term="Production duration" value="7 days" />
-          <Rule term="This deployment" value={durationLabel(epoch?.epoch_duration_ns, epoch?.deployment_kind)} />
-          <Rule term="Early exit penalty" value="5%" />
-          <Rule term="Retention target" value="80%" />
-          <Rule term="Minimum participants" value="25" />
-          <Rule term="Maximum epoch mint" value="500 PAPER" />
+          <Rule delay={0} term="Commitment" value="1,000 PAPER" />
+          <Rule delay={0.06} term="Production duration" value="7 days" />
+          <Rule delay={0.12} term="This deployment" value={durationLabel(epoch?.epoch_duration_ns, epoch?.deployment_kind)} />
+          <Rule delay={0.18} term="Early exit penalty" value="5%" />
+          <Rule delay={0.24} term="Retention target" value="80%" />
+          <Rule delay={0.3} term="Minimum participants" value="25" />
+          <Rule delay={0.36} term="Maximum epoch mint" value="500 PAPER" />
         </dl>
         <p className="mt-6 max-w-3xl text-lg">
           50% of early-exit penalties are burned, while the remaining 50% rewards participants who stay committed.
@@ -233,14 +249,18 @@ export function HomeExperience() {
       </section>
 
       <section className="mx-auto mt-24 grid max-w-[1100px] gap-8 lg:grid-cols-[0.8fr_1.2fr]" id="how">
-        <div className="lg:sticky lg:top-28 lg:self-start">
+        <div className="lg:sticky lg:top-28 lg:self-start" data-reveal="soft">
           <p className="eyebrow">How it works</p>
           <h2 className="display-md mt-3">A path, not a pile of cards.</h2>
           <p className="mt-4 text-ink/75">Six actions. The contract is the one that moves PAPER. The buttons live on the commitment page.</p>
+          <div className="mt-6 hidden w-fit lg:block" data-reveal="hand">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img alt="" className="h-64 w-auto" height={1024} src="/assets/paperhands/illustrations/lock.png" width={764} />
+          </div>
         </div>
         <ol className="grid gap-4">
-          {STEPS.map(([n, title, copy]) => (
-            <li className="card flex gap-4 p-5" key={n}>
+          {STEPS.map(([n, title, copy], index) => (
+            <li className="card flex gap-4 p-5" data-reveal style={wait(index * 0.08)} key={n}>
               <span className="num">{n}</span>
               <div>
                 <h3 className="font-display text-3xl">{title}</h3>
@@ -255,14 +275,14 @@ export function HomeExperience() {
         <p className="eyebrow">Paperhands index</p>
         <h2 className="display-md mt-3">What the settled epochs actually did</h2>
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Metric label="Retention, last epoch" value={last?.retention_bps != null ? `${(last.retention_bps / 100).toFixed(2)}%` : "—"} note="From get_epoch" />
-          <Metric label="Early exits read" value={history.length ? String(exits) : "—"} note={`Across ${history.length} finalized epochs on this page`} />
-          <Metric label="PAPER burned" value={paper(sumBurns(books))} note="Exit, reserve, dust, and swept burns" />
-          <Metric label="Survivor bonuses" value={paper(books?.unclaimed_exit_bonuses)} note="Still unclaimed" />
-          <Metric label="Successful epochs" value={history.length ? String(successes) : "—"} note="finalized and success" />
-          <Metric label="Failed epochs" value={history.length ? String(failures) : "—"} note="finalized and not success" />
-          <Metric label="Current streak" value={epoch ? String(epoch.current_streak) : "—"} note="" />
-          <Metric label="Longest streak" value={epoch ? String(epoch.longest_streak) : "—"} note="" />
+          <Metric delay={0} label="Retention, last epoch" value={last?.retention_bps != null ? `${(last.retention_bps / 100).toFixed(2)}%` : "—"} note="From get_epoch" />
+          <Metric delay={0.06} label="Early exits read" value={history.length ? String(exits) : "—"} note={`Across ${history.length} finalized epochs on this page`} />
+          <Metric delay={0.12} label="PAPER burned" value={paper(sumBurns(books))} note="Exit, reserve, dust, and swept burns" />
+          <Metric delay={0.18} label="Survivor bonuses" value={paper(books?.unclaimed_exit_bonuses)} note="Still unclaimed" />
+          <Metric delay={0.24} label="Successful epochs" value={history.length ? String(successes) : "—"} note="finalized and success" />
+          <Metric delay={0.3} label="Failed epochs" value={history.length ? String(failures) : "—"} note="finalized and not success" />
+          <Metric delay={0.36} label="Current streak" value={epoch ? String(epoch.current_streak) : "—"} note="" />
+          <Metric delay={0.42} label="Longest streak" value={epoch ? String(epoch.longest_streak) : "—"} note="" />
         </div>
         {history.length ? (
           <div className="card mt-6 p-5">
@@ -289,23 +309,23 @@ export function HomeExperience() {
         <p className="eyebrow">Tokenomics</p>
         <h2 className="display-md mt-3">One million PAPER. Two reserves. No builder cut.</h2>
         <div className="mt-8 grid gap-4 md:grid-cols-3">
-          <article className="rounded-[2rem] bg-forest p-6 text-cream">
+          <article className="rounded-[2rem] bg-forest p-6 text-cream" data-reveal>
             <p className="text-sm">Initial supply</p>
             <p className="mt-3 font-display text-5xl">1,000,000</p>
             <p className="mt-2 text-sm text-cream/80">PAPER, 8 decimals. Minted once at init.</p>
           </article>
-          <article className="rounded-[2rem] bg-pink p-6 text-ink">
+          <article className="rounded-[2rem] bg-pink p-6 text-ink" data-reveal style={wait(0.1)}>
             <p className="text-sm">Community / testnet</p>
             <p className="mt-3 font-display text-5xl">700,000</p>
             <p className="mt-2 text-sm">Faucet reserve. Claims move it. They do not mint.</p>
           </article>
-          <article className="rounded-[2rem] bg-charcoal p-6 text-cream">
+          <article className="rounded-[2rem] bg-charcoal p-6 text-cream" data-reveal style={wait(0.2)}>
             <p className="text-sm">Burn reserve</p>
             <p className="mt-3 font-display text-5xl">300,000</p>
             <p className="mt-2 text-sm text-cream/80">Failed epochs burn up to 250 PAPER from here.</p>
           </article>
         </div>
-        <div className="card mt-4 grid gap-4 p-6 md:grid-cols-2">
+        <div className="card mt-4 grid gap-4 p-6 md:grid-cols-2" data-reveal="soft">
           <p>Graded emission is 1% of active locked principal, never more than 500 PAPER in one epoch. That cap is not an APY.</p>
           <p>A failed epoch can burn 250 PAPER from the reserve. Early-exit penalties split 25 burned and 25 to survivors. Dust that cannot be split evenly is burned.</p>
           <p>Supply changes only on mints and burns. Transfers, locks, refunds, and bonuses move balances.</p>
@@ -321,7 +341,7 @@ export function HomeExperience() {
           Browser rows are transactions this wallet flow stored after an RPC SuccessValue. Contract rows come from NearBlocks for the configured account. If either source is empty, the list stays empty.
         </p>
         <div className="mt-6 grid gap-4 lg:grid-cols-2">
-          <div className="card p-5">
+          <div className="card p-5" data-reveal>
             <h3 className="font-display text-3xl">This browser</h3>
             <ul className="mt-4 space-y-3 text-sm">
               {localTxs.length === 0 ? <li className="text-ink/60">No local transactions yet.</li> : null}
@@ -333,7 +353,7 @@ export function HomeExperience() {
               ))}
             </ul>
           </div>
-          <div className="card p-5">
+          <div className="card p-5" data-reveal style={wait(0.1)}>
             <h3 className="font-display text-3xl">Contract account</h3>
             {remoteNote ? <p className="mt-4 text-sm text-ink/70">{remoteNote}</p> : null}
             <ul className="mt-4 space-y-3 text-sm">
@@ -370,11 +390,13 @@ export function HomeExperience() {
 
       <footer className="mx-auto mt-20 max-w-[1100px]">
         <div className="grid gap-4 md:grid-cols-2">
-          <div className="rounded-[2rem] bg-forest p-6 text-cream">
+          <div className="relative overflow-hidden rounded-[2rem] bg-forest p-6 text-cream" data-reveal>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img alt="" className="ml-auto h-28 w-auto" height={206} src="/assets/paperhands/illustrations/bump.png" width={240} />
             <p className="font-display text-4xl">Weak hands. Strong rules.</p>
             <p className="mt-3 text-cream/80">PAPERHANDS on NEAR. The faucet is not Sybil-proof.</p>
           </div>
-          <div className="rounded-[2rem] bg-pink p-6">
+          <div className="rounded-[2rem] bg-pink p-6" data-reveal style={wait(0.12)}>
             <p className="font-display text-4xl">Ready when you are.</p>
             <Link className="btn btn-cream mt-4" href="/commitment">Join this epoch</Link>
           </div>
@@ -411,6 +433,10 @@ function stampFromNs(value: string) {
   }
 }
 
+function wait(seconds: number): CSSProperties {
+  return { "--delay": `${seconds}s` } as CSSProperties;
+}
+
 function HeroStat({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-2xl bg-[#04261ccc] px-3 py-3">
@@ -420,9 +446,9 @@ function HeroStat({ label, value }: { label: string; value: string }) {
   );
 }
 
-function Metric({ label, value, note }: { label: string; value: string; note: string }) {
+function Metric({ label, value, note, delay = 0 }: { label: string; value: string; note: string; delay?: number }) {
   return (
-    <article className="card p-5">
+    <article className="card p-5" data-reveal style={wait(delay)}>
       <p className="text-sm text-ink/60">{label}</p>
       <p className="mt-2 font-display text-4xl leading-none">{value}</p>
       {note ? <p className="mt-2 text-xs text-ink/55">{note}</p> : null}
@@ -430,9 +456,9 @@ function Metric({ label, value, note }: { label: string; value: string; note: st
   );
 }
 
-function Rule({ term, value }: { term: string; value: string }) {
+function Rule({ term, value, delay = 0 }: { term: string; value: string; delay?: number }) {
   return (
-    <div className="rounded-2xl bg-white px-4 py-3 shadow-[0_0_60px_#00000012]">
+    <div className="rounded-2xl bg-white px-4 py-3 shadow-[0_0_60px_#00000012]" data-reveal style={wait(delay)}>
       <dt className="text-xs uppercase tracking-wide text-ink/50">{term}</dt>
       <dd className="mt-1 font-semibold">{value}</dd>
     </div>
