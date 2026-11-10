@@ -4,7 +4,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "PAPERHANDS",
-  description: "Diamond commitment on NEAR. Demo epochs are not seven-day production epochs.",
+  description: "Weak hands. Strong rules. Lock PAPER on NEAR. Demo epochs are not seven-day production epochs.",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

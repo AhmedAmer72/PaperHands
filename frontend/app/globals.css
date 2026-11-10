@@ -1,39 +1,380 @@
 @import "tailwindcss";
 
-@theme {
-  --color-charcoal: #16161a;
-  --color-ink: #232228;
-  --color-paper: #f3efe4;
-  --color-cyan: #2ee6d6;
-  --color-violet: #7a5cff;
-  --color-orange: #ff7a2f;
-  --font-sans: "Iowan Old Style", Palatino, Georgia, serif;
+@font-face {
+  font-family: Anton;
+  src: url("/fonts/Anton-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
 }
 
+@font-face {
+  font-family: Poppins;
+  src: url("/fonts/Poppins-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: Poppins;
+  src: url("/fonts/Poppins-SemiBold.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@theme {
+  --color-cream: #fffdf7;
+  --color-forest: #09543d;
+  --color-forest-deep: #04261c;
+  --color-ink: #461e10;
+  --color-pink: #ffa9e9;
+  --color-cyan: #40c6fb;
+  --color-orange: #f45c24;
+  --color-violet: #6d0596;
+  --color-charcoal: #1e1e1e;
+  --color-lime: #ccf337;
+  --color-paper: #fffdf7;
+  --color-blue: #3d3ef3;
+  --font-sans: Poppins, "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-display: Anton, "Arial Narrow", Impact, sans-serif;
+  --radius-card: 3rem;
+  --shadow-card: 0 0 100px #0000001a;
+}
+
+@layer base {
 html {
-  background: #16161a;
+  background: #fffdf7;
+  scroll-behavior: smooth;
 }
 
 body {
   margin: 0;
   min-height: 100vh;
-  background:
-    radial-gradient(circle at top left, rgba(122, 92, 255, 0.16), transparent 28rem),
-    #16161a;
-  color: #f3efe4;
-  font-family: "Iowan Old Style", Palatino, Georgia, serif;
+  overflow-x: clip;
+  background: #fffdf7;
+  color: #461e10;
+  font-family: Poppins, "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-weight: 400;
+  text-rendering: geometricPrecision;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: #ffa9e9;
+  color: #461e10;
 }
 
 a {
   color: inherit;
+  text-decoration: none;
 }
 
 button,
-input {
+input,
+summary {
   font: inherit;
 }
 
 button:disabled {
   cursor: not-allowed;
-  opacity: 0.4;
+  opacity: 0.45;
+}
+
+h1,
+h2,
+.display {
+  font-family: Anton, "Arial Narrow", Impact, sans-serif;
+  font-weight: 400;
+  letter-spacing: -0.04em;
+  line-height: 0.92;
+  text-transform: uppercase;
+}
+}
+
+@layer components {
+.display {
+  font-size: clamp(3.4rem, 8vw, 7.6rem);
+}
+
+.display-md {
+  font-family: Anton, "Arial Narrow", Impact, sans-serif;
+  font-size: clamp(2.6rem, 5vw, 4.8rem);
+  font-weight: 400;
+  letter-spacing: -0.035em;
+  line-height: 0.94;
+  text-transform: uppercase;
+}
+
+.marker {
+  box-decoration-break: clone;
+  background-image: linear-gradient(#ffa9e9, #ffa9e9);
+  background-position: 0 82%;
+  background-repeat: no-repeat;
+  background-size: 100% 62%;
+  color: #461e10;
+  padding: 0 0.08em;
+}
+
+.eyebrow {
+  color: #09543d;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.hero-card {
+  position: relative;
+  overflow: visible;
+  border-radius: 2.4rem;
+  background: #09543d;
+  color: #fffdf7;
+  padding: clamp(4.5rem, 8vw, 7rem) clamp(1.2rem, 4vw, 4rem) clamp(2.5rem, 5vw, 4rem);
+  scroll-margin-top: 5.5rem;
+}
+
+section {
+  scroll-margin-top: 5.5rem;
+}
+
+.hero-hands {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.hand {
+  position: absolute;
+  z-index: 2;
+  height: auto;
+  pointer-events: none;
+  animation: hand-in 0.7s cubic-bezier(0.17, 0.67, 0.3, 1.1) both;
+  filter: drop-shadow(0 18px 24px #00000022);
+}
+
+.hand-paper {
+  top: 8%;
+  left: -1%;
+  width: min(22vw, 220px);
+  animation-delay: 0.12s;
+}
+
+.hand-diamond {
+  right: -1%;
+  bottom: 1%;
+  width: min(22vw, 230px);
+  animation-delay: 0.32s;
+}
+
+@keyframes hand-in {
+  from {
+    opacity: 0;
+    transform: scale(0.84) translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.toggle {
+  display: flex;
+  width: min(100%, 42rem);
+  margin: 1.6rem auto 0;
+  padding: 0.35rem;
+  border-radius: 999px;
+  background: #fffdf7;
+  gap: 0.35rem;
+}
+
+.toggle a {
+  flex: 1;
+  border-radius: 999px;
+  padding: 0.95rem 0.8rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-align: center;
+  color: #461e10;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.toggle a.on {
+  background: #ffa9e9;
+}
+
+.toggle a.on:hover {
+  background: #461e10;
+  color: #ffa9e9;
+}
+
+.toggle a.off:hover {
+  background: #09543d;
+  color: #fffdf7;
+}
+
+.card {
+  border-radius: 2rem;
+  background: #fff;
+  box-shadow: 0 0 100px #0000001a;
+}
+
+.card.forest {
+  background: #09543d;
+  color: #fffdf7;
+}
+
+.shift:nth-child(even) {
+  margin-left: clamp(0px, 8vw, 7rem);
+}
+
+.shift:nth-child(odd) {
+  margin-right: clamp(0px, 8vw, 7rem);
+}
+
+.num {
+  display: flex;
+  width: 3.4rem;
+  height: 3.4rem;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: #ffa9e9;
+  color: #461e10;
+  font-family: Anton, sans-serif;
+  font-size: 1.3rem;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 0.95rem 1.5rem;
+  font-size: 0.92rem;
+  font-weight: 600;
+  transition: background-color 0.3s ease, color 0.3s ease, transform 0.3s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+.btn-pink {
+  background: #ffa9e9;
+  color: #461e10;
+}
+
+.btn-pink:hover {
+  background: #461e10;
+  color: #ffa9e9;
+}
+
+.btn-green {
+  background: #09543d;
+  color: #fffdf7;
+}
+
+.btn-green:hover {
+  background: #04261c;
+}
+
+.btn-cream {
+  background: #fffdf7;
+  color: #461e10;
+}
+
+.btn-cream:hover {
+  background: #461e10;
+  color: #fffdf7;
+}
+
+details.faq {
+  border-bottom: 1px solid #461e1022;
+  padding: 1.1rem 0;
+}
+
+details.faq summary {
+  cursor: pointer;
+  list-style: none;
+  font-weight: 600;
+}
+
+details.faq summary::-webkit-details-marker {
+  display: none;
+}
+
+details.faq p {
+  max-width: 46rem;
+  padding-top: 0.7rem;
+  color: #461e10cc;
+  line-height: 1.55;
+}
+
+@media (max-width: 900px) {
+  .hero-card {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding-top: 2.6rem;
+  }
+
+  .hero-hands {
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 0.75rem;
+    order: 2;
+    height: auto;
+    margin-top: 0.2rem;
+  }
+
+  .hero-copy {
+    order: 1;
+  }
+
+  .hero-stats,
+  .hero-card > p {
+    order: 3;
+  }
+
+  .hand,
+  .hand-paper,
+  .hand-diamond {
+    position: relative;
+    top: auto;
+    right: auto;
+    bottom: auto;
+    left: auto;
+    width: auto;
+    height: 11.5rem;
+    max-width: 46%;
+  }
+
+  .shift:nth-child(even),
+  .shift:nth-child(odd) {
+    margin: 0;
+  }
+
+  .display {
+    font-size: clamp(2.7rem, 12vw, 4rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .hand,
+  .btn {
+    animation: none;
+    transition: none;
+  }
+
+  .btn:hover {
+    transform: none;
+  }
+}
 }

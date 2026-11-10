@@ -43,8 +43,8 @@ export default function CommitmentPage() {
   return (
     <section className="max-w-3xl">
       <h1 className="text-4xl">Diamond commitment</h1>
-      <p className="mt-3 text-paper/80">{epoch ? deploymentBanner(epoch.deployment_kind, epoch.faucet_enabled) : error}</p>
-      <ul className="mt-6 space-y-2 text-paper/90">
+      <p className="mt-3 text-ink/75">{epoch ? deploymentBanner(epoch.deployment_kind, epoch.faucet_enabled) : error}</p>
+      <ul className="mt-6 space-y-2 text-ink/90">
         <li>You lock exactly 1,000 PAPER. Ordinary transfers are not taxed.</li>
         <li>This deployment&apos;s epoch is {durationLabel(epoch?.epoch_duration_ns, epoch?.deployment_kind)}.</li>
         <li>Entry window: {durationLabel(epoch?.entry_window_ns, epoch?.deployment_kind)}.</li>
@@ -64,23 +64,23 @@ export default function CommitmentPage() {
         <span>I understand the 1,000 PAPER lock, the 5% early-exit penalty, and that this screen shows the contract&apos;s real duration.</span>
       </label>
       <div className="mt-4 flex flex-wrap gap-3">
-        <button className="rounded-full border border-white/20 px-4 py-2" disabled={!confirmed || wallet.busy} onClick={() => void act(() => wallet.send("storage_deposit", { account_id: null, registration_only: null }, DEPOSIT_STORAGE))} type="button">
+        <button className="btn btn-cream border border-ink/15" disabled={!confirmed || wallet.busy} onClick={() => void act(() => wallet.send("storage_deposit", { account_id: null, registration_only: null }, DEPOSIT_STORAGE))} type="button">
           Register storage
         </button>
-        <button className="rounded-full border border-orange/60 px-4 py-2" disabled={!confirmed || wallet.busy || !epoch?.faucet_enabled} onClick={() => void act(() => wallet.send("claim_testnet_faucet", {}, DEPOSIT_STORAGE))} type="button">
+        <button className="btn border border-orange/60 bg-white" disabled={!confirmed || wallet.busy || !epoch?.faucet_enabled} onClick={() => void act(() => wallet.send("claim_testnet_faucet", {}, DEPOSIT_STORAGE))} type="button">
           Claim faucet
         </button>
-        <button className="rounded-full bg-cyan px-4 py-2 text-charcoal" disabled={!confirmed || wallet.busy} onClick={() => void act(() => wallet.send("join_epoch", {}, DEPOSIT_JOIN))} type="button">
+        <button className="btn btn-pink" disabled={!confirmed || wallet.busy} onClick={() => void act(() => wallet.send("join_epoch", {}, DEPOSIT_JOIN))} type="button">
           Sign join
         </button>
-        <button className="rounded-full border border-white/20 px-4 py-2" disabled={!confirmed || wallet.busy} onClick={() => void act(() => wallet.send("cancel_during_entry", {}, DEPOSIT_JOIN))} type="button">
+        <button className="btn btn-cream border border-ink/15" disabled={!confirmed || wallet.busy} onClick={() => void act(() => wallet.send("cancel_during_entry", {}, DEPOSIT_JOIN))} type="button">
           Cancel entry
         </button>
-        <button className="rounded-full border border-orange px-4 py-2" disabled={!confirmed || wallet.busy} onClick={() => void act(() => wallet.send("exit_early", {}, DEPOSIT_JOIN))} type="button">
+        <button className="btn border border-orange bg-white text-orange" disabled={!confirmed || wallet.busy} onClick={() => void act(() => wallet.send("exit_early", {}, DEPOSIT_JOIN))} type="button">
           Exit early
         </button>
       </div>
-      <p className="mt-3 text-xs text-paper/60">The faucet pays 1,000 PAPER once per account from the reserve. It does not mint. A new Testnet account is a new claim. It is not proof of humanity.</p>
+      <p className="mt-3 text-xs text-ink/60">The faucet pays 1,000 PAPER once per account from the reserve. It does not mint. A new Testnet account is a new claim. It is not proof of humanity.</p>
       {wallet.error ? <p className="mt-3 text-sm text-orange">{wallet.error}</p> : null}
       <Report report={report} />
     </section>

@@ -1,7 +1,7 @@
 export default function RulesPage() {
   return (
-    <article className="max-w-3xl space-y-4 text-paper/90">
-      <h1 className="text-4xl text-paper">Protocol rules</h1>
+    <article className="max-w-3xl space-y-4 text-ink/90">
+      <h1 className="text-4xl text-ink">Protocol rules</h1>
       <p>PAPER is a NEP-141 token with 8 decimals. The contract starts with 1,000,000 PAPER. A commitment locks exactly 1,000 PAPER. Sending PAPER to someone else is not taxed.</p>
       <p>An epoch begins at the init block time and then every epoch length after that. Production uses 7 days and a 24-hour entry window. A demo deployment uses 1 hour and a 10-minute entry window. The demo is not a seven-day production epoch. The contract stores which one it is, and nothing in the contract can switch it later.</p>
       <p>Join during the entry window if you are registered, hold 1,000 PAPER, and the cohort is under 500. Cancel during that same window and the full 1,000 comes back. You cannot rejoin that epoch. After the entry window, the cohort size freezes. Leaving then is an early exit: you receive 950, 25 is burned, and 25 is reserved for the people who stay. You cannot exit once the epoch has ended.</p>

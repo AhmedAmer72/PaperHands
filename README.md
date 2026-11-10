@@ -46,7 +46,8 @@ contracts/paperhands/    Rust contract, unit tests, sandbox tests
 frontend/                Next.js app, eight routes
 simulator/               Integer scenarios A, B, and C
 scripts/                 build, dry-run demo, read-only views
-docs/                    rules, invariants, Sybil limits, deploy notes
+docs/                    rules, invariants, Sybil limits, deploy notes, visual audit
+design-reference/        Phamily Pharma files kept for analysis, not used by the app
 ```
 
 Pages: `/`, `/commitment`, `/paperhands-index`, `/epoch/[id]`, `/economy`, `/explorer`, `/lab`, `/rules`. The lab chart is labeled SIMULATION. It is not Testnet history.
@@ -60,3 +61,7 @@ Not done: Testnet deploy, funded accounts, a live 25-account demo, removal of th
 Pins: `near-sdk` `=5.30.1` and `near-contract-standards` `=5.30.1`. See [docs/DEPENDENCIES.md](docs/DEPENDENCIES.md).
 
 License: MIT OR Apache-2.0. See [LICENSE](LICENSE).
+
+## Visual design
+
+The landing page is a cream, forest, and pink editorial layout. The reference audit is [docs/design-audit.md](docs/design-audit.md). Tokens live in [docs/design-system.md](docs/design-system.md) and `frontend/app/globals.css`. What changed, and what was actually checked, is [docs/visual-implementation.md](docs/visual-implementation.md). Phamily artwork stays in `design-reference/` and is not part of the product.

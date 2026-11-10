@@ -64,8 +64,8 @@ export default function EpochPage() {
       ) : null}
       <div className="mt-6 flex flex-wrap gap-3">
         <button className="rounded-full bg-cyan px-4 py-2 text-charcoal" onClick={() => void call("finalize_epoch")} type="button">Finalize</button>
-        <button className="rounded-full border border-white/20 px-4 py-2" onClick={() => void call("claim_principal")} type="button">Claim principal</button>
-        <button className="rounded-full border border-white/20 px-4 py-2" onClick={() => void call("claim_epoch_rewards")} type="button">Claim rewards</button>
+        <button className="rounded-full border border-ink/15 px-4 py-2" onClick={() => void call("claim_principal")} type="button">Claim principal</button>
+        <button className="rounded-full border border-ink/15 px-4 py-2" onClick={() => void call("claim_epoch_rewards")} type="button">Claim rewards</button>
         <button className="rounded-full border border-orange px-4 py-2" onClick={() => void call("sweep_unclaimed_epoch_rewards")} type="button">Sweep expired rewards</button>
       </div>
       <Report report={report} />
@@ -75,8 +75,8 @@ export default function EpochPage() {
 
 function Item({ term, value }: { term: string; value: string }) {
   return (
-    <div className="rounded-lg bg-ink p-3">
-      <dt className="text-paper/50">{term}</dt>
+    <div className="rounded-lg bg-white p-3">
+      <dt className="text-ink/50">{term}</dt>
       <dd className="mt-1 break-all">{value}</dd>
     </div>
   );

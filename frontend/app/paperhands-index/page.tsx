@@ -31,19 +31,19 @@ export default function IndexPage() {
   return (
     <section>
       <h1 className="text-4xl">Paperhands index</h1>
-      <p className="mt-3 max-w-3xl text-paper/75">Retention, cohorts, exits, locked PAPER, burns, bonuses, and streaks. These numbers come from contract views. The page does not decide them.</p>
+      <p className="mt-3 max-w-3xl text-ink/70">Retention, cohorts, exits, locked PAPER, burns, bonuses, and streaks. These numbers come from contract views. The page does not decide them.</p>
       {error ? <p className="mt-4 text-orange">{error}</p> : null}
       <div className="mt-6 grid gap-4 md:grid-cols-3">
-        <article className="rounded-xl bg-ink p-4">Current streak {epoch?.current_streak ?? "—"} / longest {epoch?.longest_streak ?? "—"}</article>
-        <article className="rounded-xl bg-ink p-4">Locked {paper(balances?.locked_principal)}</article>
-        <article className="rounded-xl bg-ink p-4">Exit burn {paper(balances?.total_exit_burned)} · reserve burn {paper(balances?.total_reserve_burned)} · dust {paper(balances?.total_dust_burned)}</article>
-        <article className="rounded-xl bg-ink p-4">Unclaimed bonuses {paper(balances?.unclaimed_exit_bonuses)}</article>
-        <article className="rounded-xl bg-ink p-4">Graded mint {paper(balances?.total_graded_minted)}</article>
-        <article className="rounded-xl bg-ink p-4">Supply {paper(balances?.total_supply)}</article>
+        <article className="rounded-xl bg-white p-4">Current streak {epoch?.current_streak ?? "—"} / longest {epoch?.longest_streak ?? "—"}</article>
+        <article className="rounded-xl bg-white p-4">Locked {paper(balances?.locked_principal)}</article>
+        <article className="rounded-xl bg-white p-4">Exit burn {paper(balances?.total_exit_burned)} · reserve burn {paper(balances?.total_reserve_burned)} · dust {paper(balances?.total_dust_burned)}</article>
+        <article className="rounded-xl bg-white p-4">Unclaimed bonuses {paper(balances?.unclaimed_exit_bonuses)}</article>
+        <article className="rounded-xl bg-white p-4">Graded mint {paper(balances?.total_graded_minted)}</article>
+        <article className="rounded-xl bg-white p-4">Supply {paper(balances?.total_supply)}</article>
       </div>
       <div className="mt-6 overflow-x-auto">
         <table className="w-full text-left text-sm">
-          <thead className="text-paper/50">
+          <thead className="text-ink/50">
             <tr>
               <th className="py-2">Epoch</th>
               <th>Original</th>
@@ -55,7 +55,7 @@ export default function IndexPage() {
           </thead>
           <tbody>
             {rows.map((row) => (
-              <tr className="border-t border-white/10" key={row.epoch_id}>
+              <tr className="border-t border-ink/10" key={row.epoch_id}>
                 <td className="py-2">{row.epoch_id}</td>
                 <td>{row.original_participants ?? "open"}</td>
                 <td>{row.active_participants}</td>
