@@ -1,0 +1,31 @@
+name: test
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.95.0
+          targets: wasm32-unknown-unknown
+      - name: unit tests
+        working-directory: contracts/paperhands
+        run: cargo test --lib --locked
+
+  simulator:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: simulator tests
+        working-directory: simulator
+        run: npm install && npm test
+
+# Sandbox tests and the Next.js build are local. This workflow does not deploy.
