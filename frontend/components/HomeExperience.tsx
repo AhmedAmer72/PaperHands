@@ -137,7 +137,7 @@ export function HomeExperience() {
 
   return (
     <div className="px-3 pb-16 md:px-5">
-      <section className="mx-auto max-w-[1200px]">
+      <section className="mx-auto w-full">
         <div className="hero-card">
           <div className="hero-hands" aria-hidden>
             <div className="hand hand-paper" data-reveal="hand" style={wait(0.15)}>
