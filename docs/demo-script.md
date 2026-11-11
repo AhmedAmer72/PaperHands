@@ -1,6 +1,6 @@
 # Demo script
 
-This demo has not been run on Testnet. The steps below are what `scripts/demo-testnet.sh` prints. They become transactions only after the owner authorizes execution. Do not invent a hash for them.
+Deploy and `new` have been sent for `diabloodevs.testnet`. The hashes are in `docs/deployment.md`. The later steps below (faucet, join, exit, finalize, claims) have not been run. Do not invent hashes for those.
 
 The deployment under test is `demo-testnet`: epochs last 1 hour, the entry window lasts 10 minutes, and the faucet is on. Do not describe those epochs as seven-day production epochs.
 

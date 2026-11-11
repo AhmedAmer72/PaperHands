@@ -36,4 +36,4 @@ Webpack build. Turbopack 15.5.29 does not resolve `paperhands-simulator`. The la
 
 ## Not run here
 
-No Testnet deploy, no funded account, no Mainnet call, and no live wallet signature. `scripts/demo-testnet.sh` without `PAPERHANDS_EXECUTE=1` only prints the plan.
+The local checks above do not send transactions. A later demo deploy did: `diabloodevs.testnet`, recorded in `docs/deployment.md`. No Mainnet call and no live wallet signature. `scripts/demo-testnet.sh` without `PAPERHANDS_EXECUTE=1` only prints the plan.

@@ -2,13 +2,13 @@
 
 A NEAR fungible token and a single commitment protocol. Lock 1,000 PAPER for one epoch. Stay, and you can claim that principal plus an equal share of the epoch's mint and of the early-exit bonuses. Leave after the entry window and you get 950 back: 25 is burned and 25 is assigned to whoever stays.
 
-This repository is the Testnet MVP. It has not been deployed. There is no contract account and no transaction hash. The faucet is not Sybil-proof: one person can use many Testnet accounts.
+This repository is the Testnet MVP. The demo contract is deployed at `diabloodevs.testnet`. Init minted 1,000,000 PAPER (raw `100000000000000`, 8 decimals) under NEP-141. The faucet is not Sybil-proof: one person can use many Testnet accounts.
 
 Demo init and production init are different clocks. A `demo-testnet` deployment uses a **1 hour** epoch and a **10 minute** entry window. That is not a 7 day production epoch. Production init is 7 days and 24 hours, with the faucet off. Nothing in the contract changes those parameters after init.
 
 ## Judge path
 
-What you can run in this repo today, and what you would see on a chain after the owner deploys. No step below has been sent to Testnet by this build.
+What you can run in this repo today. The demo deploy below is the one transaction pair that was sent to Testnet.
 
 | Command | Action | Result |
 | --- | --- | --- |
@@ -16,7 +16,7 @@ What you can run in this repo today, and what you would see on a chain after the
 | `cd contracts/paperhands && cargo test --test test_basics --offline -- --test-threads=1` | Run the sandbox: 950/25/25, a 25-account success, an empty epoch, and a 1-unit dust split. | 3 sandbox tests pass. Local sandbox only. |
 | `cd simulator && npm test` | Run scenarios A, B, and C. | A ends at 1,004,000 PAPER. C ends at 995,800. B's published supply is `1000999.99999990` because 10 smallest units of bonus dust are burned. |
 | `scripts/demo-testnet.sh` | Print the Testnet plan. | Exits 0. Sends nothing. Refuses mainnet. |
-| After the owner deploys: `PAPERHANDS_CONTRACT_ID=<account> scripts/verify-views.sh` | Read `ft_metadata`, supply, config, faucet status. | Demo: symbol `PAPER`, supply `100000000000000`, epoch duration `3600000000000` (1 hour), `sybil_resistant: false`. |
+| `PAPERHANDS_CONTRACT_ID=diabloodevs.testnet scripts/verify-views.sh` | Read `ft_metadata`, supply, `get_economic_config`, faucet status. | Demo: symbol `PAPER`, supply `100000000000000`, epoch duration `3600000000000` (1 hour), `sybil_resistant: false`. |
 
 On-chain actions, once a demo deployment exists. The script does not create the account.
 
@@ -56,7 +56,7 @@ Pages: `/`, `/how-it-works`, `/commitment`, `/paperhands-index`, `/epoch/[id]`, 
 
 Passed locally: `cargo test --lib` (37), `cargo test --test test_basics` (3), `npm test` in `simulator` (5), `npm run build` in `frontend`.
 
-Not done: Testnet deploy, funded accounts, a live 25-account demo, removal of the contract account's access keys. The contract has no upgrade method, but the account can still deploy new code until those keys are removed. Do not call this production-ready.
+Deployed on Testnet as `diabloodevs.testnet`, demo init only. Not done: a live 25-account demo, and removal of the contract account's full-access key. The contract has no upgrade method, but the account can still deploy new code until that key is removed. Do not call this production-ready.
 
 Pins: `near-sdk` `=5.30.1` and `near-contract-standards` `=5.30.1`. See [docs/DEPENDENCIES.md](docs/DEPENDENCIES.md).
 

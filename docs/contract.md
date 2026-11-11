@@ -34,4 +34,4 @@ Finalization is O(1). It does not walk accounts. The cohort size is snapshotted 
 
 ## Views
 
-`ft_metadata`, `ft_total_supply`, `ft_balance_of`, `get_config`, `get_current_epoch`, `get_epoch`, `get_user_epoch_state`, `get_protocol_balances`, `get_faucet_status`, `get_current_streak`, `get_longest_streak`. Amounts and timestamps are decimal strings. `accounting_difference` is `"0"` when the books close. `get_faucet_status.sybil_resistant` is always false.
+`ft_metadata`, `ft_total_supply`, `ft_balance_of`, `get_economic_config`, `get_current_epoch`, `get_epoch`, `get_user_epoch_state`, `get_protocol_balances`, `get_faucet_status`, `get_current_streak`, `get_longest_streak`. Amounts and timestamps are decimal strings. `accounting_difference` is `"0"` when the books close. `get_faucet_status.sybil_resistant` is always false.
