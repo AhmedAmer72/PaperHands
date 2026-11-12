@@ -2,64 +2,93 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 import { CONTRACT_ID, MAINNET_REFUSED, NETWORK } from "@/lib/config";
 import { WalletProvider, useWallet } from "@/lib/wallet";
-import { DiamondHand, PaperHand } from "./Hands";
 
 const LINKS = [
-  ["/", "Dashboard"],
-  ["/commitment", "Commitment"],
+  ["/", "Home"],
+  ["/how-it-works", "How"],
+  ["/commitment", "Commit"],
   ["/paperhands-index", "Index"],
   ["/economy", "Economy"],
-  ["/explorer", "Explorer"],
+  ["/explorer", "Activity"],
   ["/lab", "Lab"],
   ["/rules", "Rules"],
+  ["/faq", "FAQ"],
 ];
 
 function Bar() {
   const path = usePathname();
   const wallet = useWallet();
+  const [open, setOpen] = useState(false);
+
   return (
-    <header className="border-b border-white/10">
-      <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-4 px-4 py-4">
-        <Link href="/" className="flex items-center gap-2">
-          <PaperHand className="h-10 w-10" />
-          <DiamondHand className="h-10 w-10" />
-          <span className="text-lg tracking-wide">PAPERHANDS</span>
+    <>
+    <header className="sticky top-0 z-30 px-3 pt-3 md:px-5">
+      <div className="mx-auto flex max-w-[1200px] flex-wrap items-center gap-3 rounded-[2rem] bg-forest px-3 py-2 text-cream shadow-[0_12px_40px_#09543d33] md:px-5 lg:rounded-full">
+        <Link href="/" className="flex items-center gap-2" onClick={() => setOpen(false)}>
+          <span className="grid h-9 w-9 place-items-center rounded-full bg-pink text-xs font-semibold text-ink" aria-hidden>
+            PH
+          </span>
+          <span className="font-display text-xl tracking-wide">PAPERHANDS</span>
         </Link>
-        <nav className="flex flex-wrap gap-3 text-sm text-paper/80">
+        <nav className="ml-2 hidden min-w-0 flex-1 flex-wrap items-center gap-x-3 gap-y-1 text-sm lg:flex">
           {LINKS.map(([href, label]) => (
-            <Link key={href} href={href} className={path === href ? "text-cyan" : "hover:text-paper"}>
+            <Link key={href} href={href} className={path === href ? "text-pink" : "text-cream/85 hover:text-cream"}>
               {label}
             </Link>
           ))}
         </nav>
-        <div className="ml-auto text-sm">
+        <div className="ml-auto flex items-center gap-2">
           {wallet.accountId ? (
-            <button className="rounded-full border border-cyan/40 px-3 py-1" onClick={() => void wallet.disconnect()} type="button">
+            <button className="btn btn-cream max-w-[14rem] truncate px-3 py-2 text-xs" onClick={() => void wallet.disconnect()} type="button">
               {wallet.accountId}
             </button>
           ) : (
-            <button className="rounded-full bg-violet px-3 py-1 text-paper" onClick={() => void wallet.connect()} type="button">
+            <button className="btn btn-pink px-3 py-2 text-xs" onClick={() => void wallet.connect()} type="button">
               {wallet.busy ? "Connecting" : "Connect Testnet"}
             </button>
           )}
+          <button className="btn btn-cream px-3 py-2 text-xs lg:hidden" onClick={() => setOpen((value) => !value)} type="button">
+            {open ? "Close" : "Menu"}
+          </button>
         </div>
       </div>
-      <p className="mx-auto max-w-6xl px-4 pb-3 text-xs text-paper/60">
-        {MAINNET_REFUSED
-          ? "Mainnet is refused by this MVP."
-          : `Network ${NETWORK}. Contract ${CONTRACT_ID || "not connected"}. The faucet is not Sybil-proof.`}
-      </p>
+      {open ? (
+        <nav className="mx-auto mt-2 grid max-w-[1200px] gap-1 rounded-[1.5rem] bg-forest p-4 text-cream lg:hidden">
+          {LINKS.map(([href, label]) => (
+            <Link key={href} href={href} className="rounded-full px-3 py-2 hover:bg-white/10" onClick={() => setOpen(false)}>
+              {label}
+            </Link>
+          ))}
+        </nav>
+      ) : null}
     </header>
+    <p className="mx-auto max-w-[1200px] px-5 pt-3 text-xs text-ink/70">
+      {MAINNET_REFUSED
+        ? "Mainnet is refused by this MVP."
+        : `Network ${NETWORK}. Contract ${CONTRACT_ID || "not connected"}. The faucet is not Sybil-proof.`}
+      {wallet.error ? ` ${wallet.error}` : ""}
+    </p>
+    </>
+  );
+}
+
+function Frame({ children }: { children: React.ReactNode }) {
+  const path = usePathname();
+  return (
+    <>
+      <Bar />
+      <main className={path === "/" ? "" : "mx-auto max-w-[1100px] px-5 py-8"}>{children}</main>
+    </>
   );
 }
 
 export function Shell({ children }: { children: React.ReactNode }) {
   return (
     <WalletProvider>
-      <Bar />
-      <main className="mx-auto max-w-6xl px-4 py-8">{children}</main>
+      <Frame>{children}</Frame>
     </WalletProvider>
   );
 }

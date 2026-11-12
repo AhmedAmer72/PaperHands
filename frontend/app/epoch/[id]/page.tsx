@@ -1,7 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
+import { PageNav, Stat } from "@/components/PageChrome";
 import { Report } from "@/components/Report";
 import { type EpochDetail, type UserEpochState, contractReady, view } from "@/lib/chain";
 import { DEPOSIT_JOIN } from "@/lib/config";
@@ -44,40 +46,58 @@ export default function EpochPage() {
   }
 
   return (
-    <section>
-      <h1 className="text-4xl">Epoch {id}</h1>
-      {error ? <p className="mt-3 text-orange">{error}</p> : null}
+    <section className="space-y-8">
+      <PageNav />
+      <header>
+        <p className="eyebrow mt-8">Epoch record</p>
+        <h1 className="display-md mt-3">Epoch {id}</h1>
+        <p className="mt-4 max-w-2xl text-lg text-ink/75">
+          Settlement numbers below are the contract&apos;s view of this epoch. The buttons send finalize, claim, and sweep. The contract rejects a call that is not ready. Nothing here is marked successful before both success checks.
+        </p>
+      </header>
+      {error ? <p className="rounded-2xl bg-orange/10 px-4 py-3 text-sm text-orange">{error}</p> : null}
+      <Link className="text-sm font-semibold text-forest" href="/paperhands-index">Back to the index</Link>
+
       {detail ? (
-        <dl className="mt-6 grid gap-3 text-sm md:grid-cols-2">
-          <Item term="Window" value={`${detail.start_ns} → entry ${detail.entry_end_ns} → end ${detail.end_ns}`} />
-          <Item term="Phase" value={detail.phase} />
-          <Item term="Original / active / exits" value={`${detail.original_participants ?? "open"} / ${detail.active_participants} / ${detail.early_exits}`} />
-          <Item term="Retention" value={`${detail.retention_bps ?? "—"} bps`} />
-          <Item term="Finalized" value={detail.finalized ? `yes, success ${String(detail.success)}` : "no"} />
-          <Item term="Mint / per survivor" value={`${paper(detail.minted)} / ${paper(detail.reward_per_survivor)}`} />
-          <Item term="Exit burn / reserve burn / dust" value={`${paper(detail.exit_burned)} / ${paper(detail.reserve_burned)} / ${paper(detail.dust_burned)}`} />
-          <Item term="Bonus pool / per survivor" value={`${paper(detail.survivor_bonus_pool)} / ${paper(detail.bonus_per_survivor)}`} />
-          <Item term="Reward deadline" value={detail.reward_claim_deadline_ns ?? "opens at finalization"} />
-          <Item term="Your status" value={mine?.status ?? "not loaded"} />
-          <Item term="Claimable principal / mint / bonus" value={mine ? `${paper(mine.claimable_principal)} / ${paper(mine.claimable_mint)} / ${paper(mine.claimable_bonus)}` : "—"} />
-        </dl>
+        <>
+          <div className="rounded-[2rem] bg-forest p-6 text-cream md:p-8">
+            <p className="text-sm uppercase tracking-wide text-cream/70">{detail.finalized ? (detail.success ? "Finalized success" : "Finalized failure") : detail.phase}</p>
+            <p className="mt-3 font-display text-6xl">{detail.retention_bps != null ? `${(detail.retention_bps / 100).toFixed(2)}%` : "Open"}</p>
+            <p className="mt-2 text-sm text-cream/75">Retention. Original {detail.original_participants ?? "open"} · active {detail.active_participants} · exits {detail.early_exits}</p>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <Stat label="Mint / per survivor" value={`${paper(detail.minted)} / ${paper(detail.reward_per_survivor)}`} />
+            <Stat label="Bonus pool / share" value={`${paper(detail.survivor_bonus_pool)} / ${paper(detail.bonus_per_survivor)}`} />
+            <Stat label="Burns" note="Exit / reserve / dust" value={`${paper(detail.exit_burned)} · ${paper(detail.reserve_burned)} · ${paper(detail.dust_burned)}`} />
+            <Stat label="Your status" value={mine?.status ?? "not loaded"} />
+            <Stat label="Claimable" note="Principal / mint / bonus" value={mine ? `${paper(mine.claimable_principal)} · ${paper(mine.claimable_mint)} · ${paper(mine.claimable_bonus)}` : "—"} />
+            <Stat label="Reward deadline" value={detail.reward_claim_deadline_ns ?? "opens at finalization"} />
+          </div>
+          <div className="card p-5 text-sm text-ink/70">
+            <p className="break-all">Window {detail.start_ns} → entry {detail.entry_end_ns} → end {detail.end_ns}</p>
+            <p className="mt-2">Rewards swept: {String(detail.rewards_swept)}. Unclaimed mint left {paper(detail.unclaimed_mint_remaining)}. Unclaimed bonus left {paper(detail.unclaimed_bonus_remaining)}.</p>
+            {mine ? <p className="mt-2">Principal claim open: {String(mine.principal_claim_open)}. Rewards claim open: {String(mine.rewards_claim_open)}. Rewards already claimed: {String(mine.rewards_claimed)}.</p> : null}
+          </div>
+        </>
       ) : null}
-      <div className="mt-6 flex flex-wrap gap-3">
-        <button className="rounded-full bg-cyan px-4 py-2 text-charcoal" onClick={() => void call("finalize_epoch")} type="button">Finalize</button>
-        <button className="rounded-full border border-white/20 px-4 py-2" onClick={() => void call("claim_principal")} type="button">Claim principal</button>
-        <button className="rounded-full border border-white/20 px-4 py-2" onClick={() => void call("claim_epoch_rewards")} type="button">Claim rewards</button>
-        <button className="rounded-full border border-orange px-4 py-2" onClick={() => void call("sweep_unclaimed_epoch_rewards")} type="button">Sweep expired rewards</button>
+
+      <div className="grid gap-3 md:grid-cols-2">
+        <EpochAction copy="Anyone can finalize the next finished epoch, once, in order." disabled={wallet.busy} onClick={() => void call("finalize_epoch")} title="Finalize" />
+        <EpochAction copy="Returns the original 1,000 PAPER after settlement. Principal does not expire." disabled={wallet.busy} onClick={() => void call("claim_principal")} title="Claim principal" />
+        <EpochAction copy="Pays the equal mint share and the equal survivor bonus while the 30-day window is open." disabled={wallet.busy} onClick={() => void call("claim_epoch_rewards")} title="Claim rewards" />
+        <EpochAction copy="After the reward window, burns unclaimed mint and bonus. Principal is never swept." disabled={wallet.busy} onClick={() => void call("sweep_unclaimed_epoch_rewards")} title="Sweep expired rewards" warn />
       </div>
       <Report report={report} />
     </section>
   );
 }
 
-function Item({ term, value }: { term: string; value: string }) {
+function EpochAction({ title, copy, onClick, disabled, warn }: { title: string; copy: string; onClick: () => void; disabled: boolean; warn?: boolean }) {
   return (
-    <div className="rounded-lg bg-ink p-3">
-      <dt className="text-paper/50">{term}</dt>
-      <dd className="mt-1 break-all">{value}</dd>
-    </div>
+    <article className="card flex flex-col p-5">
+      <h2 className="font-display text-3xl">{title}</h2>
+      <p className="mt-2 flex-1 text-sm text-ink/70">{copy}</p>
+      <button className={warn ? "btn mt-4 border border-orange bg-white text-orange" : "btn btn-pink mt-4"} disabled={disabled} onClick={onClick} type="button">{title}</button>
+    </article>
   );
 }

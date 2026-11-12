@@ -1,6 +1,6 @@
 export const RPC_URL = process.env.NEXT_PUBLIC_NEAR_RPC_URL || "https://rpc.testnet.near.org";
 export const NETWORK = process.env.NEXT_PUBLIC_NEAR_NETWORK || "testnet";
-export const CONTRACT_ID = process.env.NEXT_PUBLIC_CONTRACT_ID || "";
+export const CONTRACT_ID = process.env.NEXT_PUBLIC_CONTRACT_ID || "diabloodevs.testnet";
 
 export const MAINNET_REFUSED = NETWORK === "mainnet";
 

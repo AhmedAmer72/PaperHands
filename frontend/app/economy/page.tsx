@@ -1,10 +1,27 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { PageHead, Stat } from "@/components/PageChrome";
 import { type CurrentEpoch, type ProtocolBalances, contractReady, view } from "@/lib/chain";
 import { deploymentBanner, durationLabel, paper } from "@/lib/format";
 
 type Config = Record<string, string | number | boolean>;
+
+const LABELS: Record<string, string> = {
+  contract_token_balance: "Contract PAPER balance",
+  burn_reserve: "Burn reserve",
+  faucet_reserve: "Faucet reserve",
+  locked_principal: "Locked principal",
+  unclaimed_mint_rewards: "Unclaimed mint",
+  unclaimed_exit_bonuses: "Unclaimed bonuses",
+  accounting_difference: "Accounting difference",
+  total_supply: "Total supply",
+  total_graded_minted: "Graded mint",
+  total_exit_burned: "Exit burn",
+  total_reserve_burned: "Reserve burn",
+  total_dust_burned: "Dust burn",
+  total_swept_burned: "Swept rewards",
+};
 
 export default function EconomyPage() {
   const [error, setError] = useState<string | null>(contractReady());
@@ -26,28 +43,57 @@ export default function EconomyPage() {
   }, []);
 
   return (
-    <section>
-      <h1 className="text-4xl">Token economy</h1>
-      <p className="mt-3 max-w-3xl text-paper/75">{epoch ? deploymentBanner(epoch.deployment_kind, epoch.faucet_enabled) : error}</p>
-      <p className="mt-2 text-sm text-paper/60">Theoretical maximum emission is 500 PAPER × 52 epochs = 26,000 PAPER in a year of seven-day epochs, before burns. That is not a guaranteed APY.</p>
-      <div className="mt-6 grid gap-3 md:grid-cols-2">
-        {balances ? Object.entries(balances).map(([key, value]) => (
-          <article className="rounded-lg bg-ink p-3" key={key}>
-            <p className="text-xs uppercase text-paper/50">{key.replaceAll("_", " ")}</p>
-            <p className="mt-1 break-all">{key.endsWith("_ns") || key === "accounting_difference" ? value : paper(value)}</p>
-          </article>
-        )) : null}
+    <section className="space-y-8">
+      <PageHead
+        eyebrow="Token economy"
+        lede="The init split is a rule. The live supply, reserves, and accounting difference appear only after the contract answers. 26,000 PAPER a year is a cap on seven-day epochs, not a yield."
+        title="One million. Two reserves."
+      />
+      <p className="max-w-3xl text-sm text-ink/70">{epoch ? deploymentBanner(epoch.deployment_kind, epoch.faucet_enabled) : error}</p>
+
+      <div className="grid gap-3 md:grid-cols-3">
+        <Stat label="Initial supply" note="Minted once at init. 8 decimals." tone="forest" value="1,000,000" />
+        <Stat label="Community / testnet" note="Faucet reserve. Claims move it. They do not mint." tone="pink" value="700,000" />
+        <Stat label="Burn reserve" note="Failed epochs burn up to 250 PAPER from here." tone="ink" value="300,000" />
       </div>
-      <h2 className="mt-8 text-2xl">Immutable config</h2>
-      <p className="mt-2 text-sm">Epoch length on this deployment: {durationLabel(epoch?.epoch_duration_ns, epoch?.deployment_kind)}.</p>
-      <dl className="mt-4 grid gap-2 text-sm md:grid-cols-2">
-        {config ? Object.entries(config).map(([key, value]) => (
-          <div className="rounded-lg border border-white/10 p-3" key={key}>
-            <dt className="text-paper/50">{key}</dt>
-            <dd className="break-all">{String(value)}</dd>
-          </div>
-        )) : null}
-      </dl>
+
+      <div className="card grid gap-6 p-6 md:grid-cols-2 md:p-8">
+        <div>
+          <h2 className="font-display text-4xl">How supply moves</h2>
+          <p className="mt-3 text-sm leading-relaxed text-ink/75">Graded emission is 1% of active locked principal, never more than 500 PAPER in one epoch. A failed epoch can burn 250 PAPER from the reserve. Early-exit penalties split 25 burned and 25 to survivors. Dust that cannot be split evenly is burned.</p>
+        </div>
+        <div className="space-y-3 text-sm">
+          <p className="rounded-2xl bg-cream px-4 py-3">This deployment&apos;s epoch length: {durationLabel(epoch?.epoch_duration_ns, epoch?.deployment_kind)}.</p>
+          <p className="rounded-2xl bg-cream px-4 py-3">Live supply: {balances ? paper(balances.total_supply) : "unread"}.</p>
+          <p className="rounded-2xl bg-cream px-4 py-3">Accounting difference: {balances?.accounting_difference ?? "unread"}.</p>
+          <p className="rounded-2xl bg-cream px-4 py-3">Theoretical maximum emission is 500 PAPER × 52 epochs = 26,000 PAPER in a year of seven-day epochs, before burns. That is not a guaranteed APY.</p>
+        </div>
+      </div>
+
+      <div>
+        <h2 className="font-display text-4xl">Contract books</h2>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          {balances ? Object.entries(balances).map(([key, value]) => (
+            <article className="card p-4" key={key}>
+              <p className="text-xs uppercase tracking-wide text-ink/50">{LABELS[key] ?? key.replaceAll("_", " ")}</p>
+              <p className="mt-2 break-all font-semibold">{key.endsWith("_ns") || key === "accounting_difference" ? value : paper(value)}</p>
+              {LABELS[key] ? <p className="mt-1 text-xs text-ink/45">{key}</p> : null}
+            </article>
+          )) : <p className="text-ink/60">No balance view yet.</p>}
+        </div>
+      </div>
+
+      <div>
+        <h2 className="font-display text-4xl">Immutable config</h2>
+        <dl className="mt-4 grid gap-3 md:grid-cols-2">
+          {config ? Object.entries(config).map(([key, value]) => (
+            <div className="card p-4" key={key}>
+              <dt className="text-xs uppercase tracking-wide text-ink/50">{key.replaceAll("_", " ")}</dt>
+              <dd className="mt-2 break-all font-semibold">{String(value)}</dd>
+            </div>
+          )) : <p className="text-ink/60">No config view yet.</p>}
+        </dl>
+      </div>
     </section>
   );
 }

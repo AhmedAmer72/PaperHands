@@ -1,6 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
+import { PageHead, Stat } from "@/components/PageChrome";
 import { type CurrentEpoch, type EpochDetail, type ProtocolBalances, contractReady, view } from "@/lib/chain";
 import { paper } from "@/lib/format";
 
@@ -28,44 +30,55 @@ export default function IndexPage() {
     })();
   }, []);
 
+  const settled = rows.filter((row) => row.finalized);
+  const widest = settled.reduce((max, row) => Math.max(max, row.retention_bps ?? 0), 1);
+  const exits = settled.reduce((sum, row) => sum + row.early_exits, 0);
+
   return (
-    <section>
-      <h1 className="text-4xl">Paperhands index</h1>
-      <p className="mt-3 max-w-3xl text-paper/75">Retention, cohorts, exits, locked PAPER, burns, bonuses, and streaks. These numbers come from contract views. The page does not decide them.</p>
-      {error ? <p className="mt-4 text-orange">{error}</p> : null}
-      <div className="mt-6 grid gap-4 md:grid-cols-3">
-        <article className="rounded-xl bg-ink p-4">Current streak {epoch?.current_streak ?? "—"} / longest {epoch?.longest_streak ?? "—"}</article>
-        <article className="rounded-xl bg-ink p-4">Locked {paper(balances?.locked_principal)}</article>
-        <article className="rounded-xl bg-ink p-4">Exit burn {paper(balances?.total_exit_burned)} · reserve burn {paper(balances?.total_reserve_burned)} · dust {paper(balances?.total_dust_burned)}</article>
-        <article className="rounded-xl bg-ink p-4">Unclaimed bonuses {paper(balances?.unclaimed_exit_bonuses)}</article>
-        <article className="rounded-xl bg-ink p-4">Graded mint {paper(balances?.total_graded_minted)}</article>
-        <article className="rounded-xl bg-ink p-4">Supply {paper(balances?.total_supply)}</article>
+    <section className="space-y-8">
+      <PageHead
+        eyebrow="Paperhands index"
+        lede="Retention, cohorts, exits, locked PAPER, burns, bonuses, and streaks. These numbers come from contract views. This page does not decide them."
+        title="What the epochs actually did"
+      />
+      {error ? <p className="rounded-2xl bg-orange/10 px-4 py-3 text-sm text-orange">{error}</p> : null}
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <Stat label="Current streak" note={`Longest ${epoch?.longest_streak ?? "—"}`} value={epoch ? String(epoch.current_streak) : "—"} />
+        <Stat label="Locked PAPER" value={paper(balances?.locked_principal)} />
+        <Stat label="Supply" value={paper(balances?.total_supply)} />
+        <Stat label="Exit burn" note={`Reserve ${paper(balances?.total_reserve_burned)} · dust ${paper(balances?.total_dust_burned)}`} value={paper(balances?.total_exit_burned)} />
+        <Stat label="Unclaimed bonuses" value={paper(balances?.unclaimed_exit_bonuses)} />
+        <Stat label="Graded mint" note={settled.length ? `${exits} early exits in the finalized rows below` : "No finalized row loaded"} value={paper(balances?.total_graded_minted)} />
       </div>
-      <div className="mt-6 overflow-x-auto">
-        <table className="w-full text-left text-sm">
-          <thead className="text-paper/50">
-            <tr>
-              <th className="py-2">Epoch</th>
-              <th>Original</th>
-              <th>Active</th>
-              <th>Exits</th>
-              <th>Retention bps</th>
-              <th>Success</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row) => (
-              <tr className="border-t border-white/10" key={row.epoch_id}>
-                <td className="py-2">{row.epoch_id}</td>
-                <td>{row.original_participants ?? "open"}</td>
-                <td>{row.active_participants}</td>
-                <td>{row.early_exits}</td>
-                <td>{row.retention_bps ?? "—"}</td>
-                <td>{row.finalized ? String(row.success) : row.phase}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+
+      <div className="card p-6">
+        <h2 className="font-display text-4xl">Retention</h2>
+        <p className="mt-2 text-sm text-ink/65">Each bar is that epoch&apos;s retention basis points, scaled to the widest finalized epoch on this page. Open epochs are listed underneath and are not drawn as a success.</p>
+        {settled.length === 0 ? <p className="mt-4 text-ink/60">No finalized epoch has been read.</p> : null}
+        <ul className="mt-5 space-y-3">
+          {settled.map((row) => (
+            <li className="grid items-center gap-3 text-sm sm:grid-cols-[5rem_1fr_4.5rem]" key={row.epoch_id}>
+              <Link className="font-semibold" href={`/epoch/${row.epoch_id}`}>#{row.epoch_id}</Link>
+              <span className="h-3 rounded-full bg-cream">
+                <span className="block h-3 rounded-full bg-forest" style={{ width: `${((row.retention_bps ?? 0) / widest) * 100}%` }} />
+              </span>
+              <span>{row.retention_bps != null ? `${(row.retention_bps / 100).toFixed(1)}%` : "—"}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="grid gap-3">
+        {rows.map((row) => (
+          <Link className="card grid gap-3 p-5 sm:grid-cols-[6rem_1fr_auto] sm:items-center" href={`/epoch/${row.epoch_id}`} key={row.epoch_id}>
+            <p className="font-display text-4xl">#{row.epoch_id}</p>
+            <div className="text-sm text-ink/75">
+              <p>{row.finalized ? (row.success ? "Finalized success" : "Finalized failure") : row.phase}</p>
+              <p className="mt-1">Original {row.original_participants ?? "open"} · active {row.active_participants} · exits {row.early_exits}</p>
+            </div>
+            <p className="text-sm font-semibold">{row.retention_bps != null ? `${(row.retention_bps / 100).toFixed(2)}% kept` : "Retention unread"}</p>
+          </Link>
+        ))}
       </div>
     </section>
   );

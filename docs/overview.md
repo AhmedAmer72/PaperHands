@@ -6,4 +6,4 @@ A participant locks 1,000 PAPER for one epoch. Leaving during the entry window r
 
 Production parameters are fixed at init: a 7 day epoch and a 24 hour entry window, faucet off. The demo init uses the same formulas with a 1 hour epoch, a 10 minute entry window, and a faucet. A demo deployment is not a seven-day production epoch. There is no method that changes these parameters later, and there is no upgrade method.
 
-This repository does not contain a Testnet or Mainnet deployment. Scripts that would deploy stay dry-run until the owner sets `PAPERHANDS_EXECUTE=1` on Testnet.
+The demo deployment is the Testnet account `diabloodevs.testnet`: a 1 hour epoch, a 10 minute entry window, and the faucet on. Mainnet has not been deployed. `scripts/demo-testnet.sh` stays a dry run until `PAPERHANDS_EXECUTE=1`.
