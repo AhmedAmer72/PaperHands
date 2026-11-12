@@ -3,6 +3,7 @@
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ConfirmAction, type ConfirmDetails } from "@/components/ConfirmAction";
+import { Field, FormError } from "@/components/Field";
 import { PageHead } from "@/components/PageChrome";
 import { Report } from "@/components/Report";
 import { CONTRACT_ID, MISSION_CONTRACT_ID, ONE_YOCTO } from "@/lib/config";
@@ -88,6 +89,7 @@ export default function MissionPage() {
       amount,
       role,
       campaignId: id,
+      subjectLabel: "Mission",
       warning,
       refundPath: "Unspent budget returns to the sponsor after the deadline, once every submission is settled. The reviewer cannot withdraw it.",
     });
@@ -96,7 +98,6 @@ export default function MissionPage() {
   return (
     <section className="space-y-8">
       <PageHead eyebrow={item?.demo_clock ? "Demo mission" : "Mission"} lede={item?.scope || "Mission terms come from MissionHub."} title={item?.objective || `Mission ${id}`} />
-      {error ? <p className="card p-5 text-sm">{error}</p> : null}
       {item ? (
         <article className="card grid gap-2 p-5 text-sm">
           <p>State {item.state} · payout {paper(item.payout_each)} · cap {item.max_acceptances}</p>
@@ -108,7 +109,7 @@ export default function MissionPage() {
           <p>Acceptance criteria: {item.criteria}</p>
           <p>A completed mission does not change a Diamond streak or a sponsor streak.</p>
         </article>
-      ) : <p className="text-sm">Reading this mission from MissionHub.</p>}
+      ) : error ? null : <p aria-busy="true" className="text-sm">Reading this mission…</p>}
       {books ? (
         <article className="card p-5 text-sm">
           <h2 className="font-display text-3xl">Escrow</h2>
@@ -116,31 +117,37 @@ export default function MissionPage() {
           <p>Refund recorded {paper(books.refund)} · pending {paper(books.pending)} · difference {books.accounting_difference}</p>
         </article>
       ) : null}
-      <label className="grid gap-1 text-sm">
-        Evidence link, commit, or short text
-        <input className="rounded-2xl border border-ink/10 bg-white px-3 py-2" value={evidence} onChange={(event) => setEvidence(event.target.value)} />
-      </label>
-      <label className="grid gap-1 text-sm">
-        Submission id
-        <input className="rounded-2xl border border-ink/10 bg-white px-3 py-2" value={submissionId} onChange={(event) => setSubmissionId(event.target.value)} />
-      </label>
-      <label className="grid gap-1 text-sm">
-        Review reason code
-        <input className="rounded-2xl border border-ink/10 bg-white px-3 py-2" value={reason} onChange={(event) => setReason(event.target.value)} />
-      </label>
-      <button className="btn btn-cream" onClick={() => void readSubmission()} type="button">Read submission</button>
-      {found ? <p className="text-sm">Submission {found.submission_id} is {found.status} for {found.account_id}. Payout {paper(found.payout)}. Reason {found.reason || "none"}.</p> : null}
+      <FormError message={error} />
       {item && budget ? (
-        <div className="flex flex-wrap gap-3">
-          <button className="btn btn-pink" onClick={() => ask("ft_transfer_call", "mission escrow deposit", paper(budget), `This sends the full budget to ${MISSION_CONTRACT_ID}. It does not join a sponsor campaign or a Diamond epoch.`)} type="button">Fund the full budget</button>
-          <button className="btn btn-green" onClick={() => ask("open_mission", "no token amount", "0 PAPER", "Only the sponsor can open a funded mission. The clock is the deployment preset.")} type="button">Open mission</button>
-          <button className="btn btn-pink" onClick={() => ask("submit_evidence", "no token leaves your wallet", "0 PAPER", "Evidence is public. Do not include an email address or other personal data.")} type="button">Submit evidence</button>
-          <button className="btn btn-green" onClick={() => ask("review_submission", "review, not a payout", "0 PAPER", "The reviewer cannot refund this budget. Use reason code rejected to decline.")} type="button">Review</button>
-          <button className="btn btn-green" onClick={() => ask("challenge_submission", "challenge, not a payout", "0 PAPER", "A challenge asks the escalation account to decide. It does not move PAPER.")} type="button">Challenge</button>
-          <button className="btn btn-green" onClick={() => ask("escalate_submission", "escalation, not a payout", "0 PAPER", "The escalation account is not the first reviewer.")} type="button">Escalate</button>
-          <button className="btn btn-cream" onClick={() => ask("settle_submission", "escrow assignment", paper(item.payout_each), "Settlement assigns this mission's escrow. It does not mint PAPER.")} type="button">Settle</button>
-          <button className="btn btn-cream" onClick={() => ask("claim_payout", "mission reward", paper(found?.payout || item.payout_each), "The payout comes only from this mission's escrow.")} type="button">Claim payout</button>
-          <button className="btn btn-cream" onClick={() => ask("refund_unspent", "unspent mission budget", paper(books?.budget), "Only the sponsor can refund, and only after the deadline when nothing is still open.")} type="button">Refund unspent</button>
+        <div className="grid gap-4">
+          <fieldset className="card grid gap-3 p-5">
+            <legend className="px-1 text-sm font-semibold text-forest">Sponsor</legend>
+            <p className="text-sm text-ink/70">Only the sponsor can fund, open, or refund. The reviewer cannot take this budget.</p>
+            <div className="flex flex-wrap gap-3">
+              <button className="btn btn-pink" onClick={() => ask("ft_transfer_call", "mission escrow deposit", paper(budget), `This sends the full budget to ${MISSION_CONTRACT_ID}. It does not join a sponsor campaign or a Diamond epoch.`)} type="button">Fund the full budget</button>
+              <button className="btn btn-green" onClick={() => ask("open_mission", "no token amount", "0 PAPER", "Only the sponsor can open a funded mission. The clock is the deployment preset.")} type="button">Open mission</button>
+              <button className="btn btn-cream" onClick={() => ask("refund_unspent", "unspent mission budget", paper(books?.budget), "Only the sponsor can refund, and only after the deadline when nothing is still open.")} type="button">Refund unspent</button>
+            </div>
+          </fieldset>
+          <fieldset className="card grid gap-3 p-5">
+            <legend className="px-1 text-sm font-semibold text-forest">Your work</legend>
+            <Field hint="Public. Leave out email addresses." label="Evidence link, commit, or short text" name="evidence" value={evidence} onChange={setEvidence} />
+            <button className="btn btn-pink w-fit" onClick={() => ask("submit_evidence", "no token leaves your wallet", "0 PAPER", "Evidence is public. Do not include an email address or other personal data.")} type="button">Submit evidence</button>
+          </fieldset>
+          <fieldset className="card grid gap-3 p-5">
+            <legend className="px-1 text-sm font-semibold text-forest">A submission</legend>
+            <Field hint="The id MissionHub returned." inputMode="numeric" label="Submission id" name="submission" value={submissionId} onChange={setSubmissionId} />
+            <Field hint="Use rejected to decline." label="Review reason code" name="reason" value={reason} onChange={setReason} />
+            <button className="btn btn-cream w-fit" onClick={() => void readSubmission()} type="button">Read submission</button>
+            {found ? <p className="text-sm">Submission {found.submission_id} is {found.status} for {found.account_id}. Payout {paper(found.payout)}. Reason {found.reason || "none"}.</p> : null}
+            <div className="flex flex-wrap gap-3">
+              <button className="btn btn-green" onClick={() => ask("review_submission", "review, not a payout", "0 PAPER", "The reviewer cannot refund this budget. Use reason code rejected to decline.")} type="button">Review</button>
+              <button className="btn btn-green" onClick={() => ask("challenge_submission", "challenge, not a payout", "0 PAPER", "A challenge asks the escalation account to decide. It does not move PAPER.")} type="button">Challenge</button>
+              <button className="btn btn-green" onClick={() => ask("escalate_submission", "escalation, not a payout", "0 PAPER", "The escalation account is not the first reviewer.")} type="button">Escalate</button>
+              <button className="btn btn-cream" onClick={() => ask("settle_submission", "escrow assignment", paper(item.payout_each), "Settlement assigns this mission's escrow. It does not mint PAPER.")} type="button">Settle</button>
+              <button className="btn btn-cream" onClick={() => ask("claim_payout", "mission reward", paper(found?.payout || item.payout_each), "The payout comes only from this mission's escrow.")} type="button">Claim payout</button>
+            </div>
+          </fieldset>
         </div>
       ) : null}
       <ConfirmAction busy={wallet.busy} details={confirming} onCancel={() => setConfirming(null)} onConfirm={() => void sign()} />

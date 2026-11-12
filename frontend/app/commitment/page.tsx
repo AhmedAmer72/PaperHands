@@ -78,7 +78,7 @@ export default function CommitmentPage() {
         </dl>
         {!wallet.accountId ? (
           <button className="btn btn-pink mt-6" onClick={() => void wallet.connect()} type="button">
-            {wallet.busy ? "Connecting" : "Connect Testnet"}
+            {wallet.busy ? "Connecting…" : "Connect Testnet"}
           </button>
         ) : (
           <p className="mt-6 text-sm text-cream/80">Connected {wallet.accountId}</p>

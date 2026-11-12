@@ -96,23 +96,40 @@ export default function CampaignPage() {
         </article>
       ) : null}
       {mine ? <p className="text-sm">Your status {mine.status}. Principal available {paper(mine.principal_available)}.</p> : <p className="text-sm">No position is stored for the connected account.</p>}
-      {item ? <div className="flex flex-wrap gap-3">
-        <button className="btn btn-pink" onClick={() => {
-          if (mine) {
-            setConfirming(null);
-            setReport({ ok: false, hash: null, method: "ft_transfer_call", detail: "This account already has a position in this campaign. A second join is rejected and no transaction was sent." });
-            return;
-          }
-          ask("ft_transfer_call", "principal, a second lock", paper(item?.commitment_amount), "This locks another 1,000 PAPER in SponsorHub. It does not join your Diamond Core epoch and it does not extend that streak.");
-        }} type="button">Join</button>
-        <button className="btn btn-green" onClick={() => ask("cancel_join", "principal refund", paper(item?.commitment_amount))} type="button">Cancel during entry</button>
-        <button className="btn btn-green" onClick={() => ask("exit_early", "early-exit return, not a burn", "950 PAPER")} type="button">Exit early</button>
-        <button className="btn btn-cream" onClick={() => ask("activate_campaign", "no token amount", "0 PAPER", "Anyone can activate after the entry window. This does not move PAPER.")} type="button">Activate</button>
-        <button className="btn btn-cream" onClick={() => ask("finalize_campaign", "no token amount", "0 PAPER", "Anyone can finalize after the campaign ends. Success and failure both split the survivor bonus.")} type="button">Finalize</button>
-        <button className="btn btn-cream" onClick={() => ask("claim_principal", "principal", paper(mine?.principal_available || "0"))} type="button">Claim principal</button>
-        <button className="btn btn-cream" onClick={() => ask("claim_survivor_bonus", "survivor bonus", paper(mine?.bonus_available || "0"))} type="button">Claim bonus</button>
-        <button className="btn btn-cream" onClick={() => ask("claim_sponsor_reward", "sponsor reward", paper(mine?.sponsor_reward_available || "0"))} type="button">Claim sponsor reward</button>
-      </div> : <p className="text-sm">Reading this campaign from SponsorHub.</p>}
+      {item ? (
+        <div className="grid gap-4">
+          <fieldset className="card grid gap-3 p-5">
+            <legend className="px-1 text-sm font-semibold text-forest">Your lock</legend>
+            <div className="flex flex-wrap gap-3">
+              <button className="btn btn-pink" onClick={() => {
+                if (mine) {
+                  setConfirming(null);
+                  setReport({ ok: false, hash: null, method: "ft_transfer_call", detail: "This account already has a position in this campaign. A second join is rejected and no transaction was sent." });
+                  return;
+                }
+                ask("ft_transfer_call", "principal, a second lock", paper(item?.commitment_amount), "This locks another 1,000 PAPER in SponsorHub. It does not join your Diamond Core epoch and it does not extend that streak.");
+              }} type="button">Join</button>
+              <button className="btn btn-green" onClick={() => ask("cancel_join", "principal refund", paper(item?.commitment_amount))} type="button">Cancel during entry</button>
+              <button className="btn btn-green" onClick={() => ask("exit_early", "early-exit return, not a burn", "950 PAPER")} type="button">Exit early</button>
+            </div>
+          </fieldset>
+          <fieldset className="card grid gap-3 p-5">
+            <legend className="px-1 text-sm font-semibold text-forest">After the window</legend>
+            <div className="flex flex-wrap gap-3">
+              <button className="btn btn-cream" onClick={() => ask("activate_campaign", "no token amount", "0 PAPER", "Anyone can activate after the entry window. This does not move PAPER.")} type="button">Activate</button>
+              <button className="btn btn-cream" onClick={() => ask("finalize_campaign", "no token amount", "0 PAPER", "Anyone can finalize after the campaign ends. Success and failure both split the survivor bonus.")} type="button">Finalize</button>
+            </div>
+          </fieldset>
+          <fieldset className="card grid gap-3 p-5">
+            <legend className="px-1 text-sm font-semibold text-forest">Your claims</legend>
+            <div className="flex flex-wrap gap-3">
+              <button className="btn btn-cream" onClick={() => ask("claim_principal", "principal", paper(mine?.principal_available || "0"))} type="button">Claim principal</button>
+              <button className="btn btn-cream" onClick={() => ask("claim_survivor_bonus", "survivor bonus", paper(mine?.bonus_available || "0"))} type="button">Claim bonus</button>
+              <button className="btn btn-cream" onClick={() => ask("claim_sponsor_reward", "sponsor reward", paper(mine?.sponsor_reward_available || "0"))} type="button">Claim sponsor reward</button>
+            </div>
+          </fieldset>
+        </div>
+      ) : <p aria-busy="true" className="text-sm">Reading this campaign…</p>}
       <ConfirmAction busy={wallet.busy} details={confirming} onCancel={() => setConfirming(null)} onConfirm={() => void sign()} />
       <Report report={report} />
     </section>

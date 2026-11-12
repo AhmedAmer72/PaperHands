@@ -42,8 +42,8 @@ export default function ProposalPage() {
         </article>
       ) : null}
       <div className="flex flex-wrap gap-3">
-        <button className="btn btn-green" onClick={() => setConfirming({ title: "Approve proposal", contract: TREASURY_CONTRACT_ID, method: "approve_proposal", token: "No token moves", amount: paper(item?.amount), role: "approval, not a transfer", campaignId: id, refundPath: "An approval does not send funds. The executor still waits for the timelock.", warning: "One account cannot both approve and execute." })} type="button">Approve</button>
-        <button className="btn btn-pink" onClick={() => setConfirming({ title: "Execute proposal", contract: TREASURY_CONTRACT_ID, method: "execute_proposal", token: "PAPER · 8 decimals", amount: paper(item?.amount), role: "treasury grant", campaignId: id, refundPath: "A failed transfer leaves the reserved budget in place.", warning: "Only the executor can send this, and only after two different approvers and the timelock." })} type="button">Execute</button>
+        <button className="btn btn-green" onClick={() => setConfirming({ title: "Approve proposal", contract: TREASURY_CONTRACT_ID, method: "approve_proposal", token: "No token moves", amount: paper(item?.amount), role: "approval, not a transfer", campaignId: id, subjectLabel: "Proposal", refundPath: "An approval does not send funds. The executor still waits for the timelock.", warning: "One account cannot both approve and execute." })} type="button">Approve</button>
+        <button className="btn btn-pink" onClick={() => setConfirming({ title: "Execute proposal", contract: TREASURY_CONTRACT_ID, method: "execute_proposal", token: "PAPER · 8 decimals", amount: paper(item?.amount), role: "treasury grant", campaignId: id, subjectLabel: "Proposal", refundPath: "A failed transfer leaves the reserved budget in place.", warning: "Only the executor can send this, and only after two different approvers and the timelock." })} type="button">Execute</button>
       </div>
       <ConfirmAction busy={wallet.busy} details={confirming} onCancel={() => setConfirming(null)} onConfirm={() => void sign()} />
       <Report report={report} />
