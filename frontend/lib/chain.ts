@@ -10,6 +10,13 @@ export function contractReady(): string | null {
   return null;
 }
 
+export async function viewAt<T>(contractId: string, method: string, args: Record<string, unknown> = {}): Promise<T> {
+  if (!contractId) throw new Error("That contract is not configured. No transaction was sent.");
+  const result = await provider().callFunction({ contractId, method, args });
+  if (result === undefined) throw new Error(`${method} returned an empty result`);
+  return result as T;
+}
+
 export async function view<T>(method: string, args: Record<string, unknown> = {}): Promise<T> {
   const missing = contractReady();
   if (missing) throw new Error(missing);

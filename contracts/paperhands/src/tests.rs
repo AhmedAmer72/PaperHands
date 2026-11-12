@@ -961,3 +961,31 @@ fn accounting_holds_across_the_whole_lifecycle() {
     world.contract.sweep_unclaimed_epoch_rewards(U64(0));
     world.assert_books();
 }
+
+#[test]
+fn griefing_cohort_still_pays_the_survivors() {
+    let mut world = World::demo();
+    for index in 0..32 {
+        let account = user(index);
+        world.prepare(&account, world.genesis);
+        world.join(&account, world.genesis);
+    }
+    let exit_at = world.entry_close(0);
+    for index in 0..7 {
+        world.exit(&user(index), exit_at);
+    }
+    world.finalize(0, world.epoch_end(0));
+    let detail = world.contract.get_epoch(U64(0));
+    assert_eq!(detail.original_participants, Some(32));
+    assert_eq!(detail.active_participants, 25);
+    assert_eq!(detail.early_exits, 7);
+    assert_eq!(detail.success, Some(false));
+    assert_eq!(detail.retention_bps, Some(7812));
+    assert_eq!(detail.minted.0, paper(250));
+    assert_eq!(detail.reserve_burned.0, paper(250));
+    assert_eq!(detail.exit_burned.0, paper(175));
+    assert_eq!(world.contract.unclaimed_exit_bonuses, paper(175));
+    assert_eq!(world.contract.get_current_streak(), 0);
+    assert_eq!(world.contract.get_longest_streak(), 0);
+    world.assert_books();
+}

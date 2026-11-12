@@ -161,8 +161,11 @@ export function HomeExperience() {
             </p>
             <div className="toggle">
               <Link className="on" href="/commitment">Join Diamond Commitment</Link>
-              <Link className="off" href="/how-it-works">Explore How It Works</Link>
+              <Link className="off" href="/sponsors">Sponsor a campaign</Link>
             </div>
+            <p className="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-cream/80">
+              A sponsor campaign is a second 1,000 PAPER lock. It does not extend the Diamond streak.
+            </p>
             <p className="mt-4 text-sm text-cream/80">
               {wallet.accountId
                 ? `Connected ${wallet.accountId}. Balance ${balance ? paper(balance) : "unread"}.`
