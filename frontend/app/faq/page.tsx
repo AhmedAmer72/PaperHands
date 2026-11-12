@@ -11,6 +11,8 @@ const QUESTIONS = [
   ["How are rewards calculated?", "If at least 25 accounts entered and at least one stayed, the mint is 1% of the survivors' locked principal, capped at 500 PAPER, divided equally. Retention can fail and the epoch can still mint."],
   ["Is PAPERHANDS Sybil-proof?", "No. The faucet pays 1,000 PAPER once per account from the reserve. One person can use many Testnet accounts. get_faucet_status.sybil_resistant is false."],
   ["What is the difference between the Testnet demo and production?", "Same formulas. Production is a 7 day epoch, a 24 hour entry window, and the faucet off. Demo-testnet is 1 hour, 10 minutes, and the faucet on. A demo deployment is not a seven-day production epoch."],
+  ["Does a sponsor campaign count as my Diamond commitment?", "No. SponsorHub keeps its own cohort. The confirm screen says so before you sign. The profile page lists the two records separately."],
+  ["Is the sponsor early-exit fee burned?", "No. 950 PAPER comes back, 25 is booked for survivors, and 25 is booked to the SponsorHub protocol reserve. The Diamond Core burn rule stays on the Diamond contract only."],
 ];
 
 export default function FaqPage() {

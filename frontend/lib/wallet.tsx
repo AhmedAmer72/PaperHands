@@ -11,7 +11,7 @@ export type TxReport = {
   method: string;
 };
 
-type Call = { method: string; args: Record<string, unknown>; deposit: string };
+type Call = { method: string; args: Record<string, unknown>; deposit: string; receiverId?: string };
 
 type WalletApi = {
   accountId: string | null;
@@ -19,7 +19,7 @@ type WalletApi = {
   error: string | null;
   connect: () => Promise<void>;
   disconnect: () => Promise<void>;
-  send: (method: string, args: Record<string, unknown>, deposit?: string) => Promise<TxReport>;
+  send: (method: string, args: Record<string, unknown>, deposit?: string, receiverId?: string) => Promise<TxReport>;
   sendMany: (calls: Call[]) => Promise<TxReport>;
 };
 
@@ -106,9 +106,9 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     return report;
   }
 
-  async function send(method: string, args: Record<string, unknown>, deposit = DEPOSIT_JOIN): Promise<TxReport> {
+  async function send(method: string, args: Record<string, unknown>, deposit = DEPOSIT_JOIN, receiverId = CONTRACT_ID): Promise<TxReport> {
     if (MAINNET_REFUSED) return { ok: false, hash: null, method, detail: "This MVP refuses mainnet." };
-    if (!CONTRACT_ID) return { ok: false, hash: null, method, detail: "No contract id is configured. No transaction was sent." };
+    if (!receiverId) return { ok: false, hash: null, method, detail: "No contract id is configured. No transaction was sent." };
     if (!connector || !accountId) return { ok: false, hash: null, method, detail: "Connect a Testnet wallet first. No transaction was sent." };
     setBusy(true);
     setError(null);
@@ -116,7 +116,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       const wallet = await connector.wallet();
       const outcome = await wallet.signAndSendTransaction({
         signerId: accountId,
-        receiverId: CONTRACT_ID,
+        receiverId,
         actions: [{ type: "FunctionCall", params: { methodName: method, args, gas: GAS, deposit } }],
       });
       return await finish(method, outcome, accountId);
@@ -142,7 +142,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       const outcomes = await wallet.signAndSendTransactions({
         signerId: accountId,
         transactions: calls.map((call) => ({
-          receiverId: CONTRACT_ID,
+          receiverId: call.receiverId || CONTRACT_ID,
           actions: [{ type: "FunctionCall", params: { methodName: call.method, args: call.args, gas: GAS, deposit: call.deposit } }],
         })),
       });

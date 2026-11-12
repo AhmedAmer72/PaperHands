@@ -13,6 +13,9 @@ const LINKS = [
   ["/paperhands-index", "Index"],
   ["/economy", "Economy"],
   ["/explorer", "Activity"],
+  ["/sponsors", "Sponsors"],
+  ["/missions", "Missions"],
+  ["/treasury", "Treasury"],
   ["/lab", "Lab"],
   ["/rules", "Rules"],
   ["/faq", "FAQ"],
@@ -42,9 +45,14 @@ function Bar() {
         </nav>
         <div className="ml-auto flex items-center gap-2">
           {wallet.accountId ? (
-            <button className="btn btn-cream max-w-[14rem] truncate px-3 py-2 text-xs" onClick={() => void wallet.disconnect()} type="button">
-              {wallet.accountId}
-            </button>
+            <>
+              <Link className="btn btn-cream max-w-[14rem] truncate px-3 py-2 text-xs" href={`/profile/${wallet.accountId}`}>
+                Profile
+              </Link>
+              <button className="btn btn-cream max-w-[14rem] truncate px-3 py-2 text-xs" onClick={() => void wallet.disconnect()} type="button">
+                {wallet.accountId}
+              </button>
+            </>
           ) : (
             <button className="btn btn-pink px-3 py-2 text-xs" onClick={() => void wallet.connect()} type="button">
               {wallet.busy ? "Connecting" : "Connect Testnet"}

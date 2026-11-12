@@ -50,7 +50,9 @@ docs/                    rules, invariants, Sybil limits, deploy notes, visual a
 design-reference/        Phamily Pharma files kept for analysis, not used by the app
 ```
 
-Pages: `/`, `/how-it-works`, `/commitment`, `/paperhands-index`, `/epoch/[id]`, `/economy`, `/explorer`, `/lab`, `/rules`, `/faq`. The lab chart is labeled SIMULATION. It is not Testnet history.
+Pages: `/`, `/how-it-works`, `/commitment`, `/paperhands-index`, `/epoch/[id]`, `/economy`, `/explorer`, `/lab`, `/rules`, `/faq`, plus V3 routes `/sponsors`, `/missions`, `/treasury`, and `/profile/[accountId]`. The lab chart is labeled SIMULATION. It is not Testnet history.
+
+V3 adds SponsorHub, MissionHub, and Treasury beside the deployed Diamond Core. A sponsor campaign locks another 1,000 PAPER. It does not join the Diamond epoch. Demo campaigns last 1 hour. Production campaigns last 7 days. The early-exit 25 PAPER inside SponsorHub is a protocol reserve, not a burn. The demo contracts are `sponsor.diabloodevs.testnet`, `missions.diabloodevs.testnet`, and `treasury.diabloodevs.testnet`. They do not replace the Diamond Core wasm. See [docs/V3_DECISIONS.md](docs/V3_DECISIONS.md), [docs/V3_THREAT_MODEL.md](docs/V3_THREAT_MODEL.md), and [docs/V3_TESTNET_REPORT.md](docs/V3_TESTNET_REPORT.md).
 
 ## Status of this build
 

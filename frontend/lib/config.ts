@@ -1,6 +1,10 @@
 export const RPC_URL = process.env.NEXT_PUBLIC_NEAR_RPC_URL || "https://rpc.testnet.near.org";
 export const NETWORK = process.env.NEXT_PUBLIC_NEAR_NETWORK || "testnet";
 export const CONTRACT_ID = process.env.NEXT_PUBLIC_CONTRACT_ID || "diabloodevs.testnet";
+export const SPONSOR_CONTRACT_ID = process.env.NEXT_PUBLIC_SPONSOR_CONTRACT_ID || "sponsor.diabloodevs.testnet";
+export const MISSION_CONTRACT_ID = process.env.NEXT_PUBLIC_MISSION_CONTRACT_ID || "missions.diabloodevs.testnet";
+export const TREASURY_CONTRACT_ID = process.env.NEXT_PUBLIC_TREASURY_CONTRACT_ID || "treasury.diabloodevs.testnet";
+export const PAPER_COMMITMENT_RAW = "100000000000";
 
 export const MAINNET_REFUSED = NETWORK === "mainnet";
 
