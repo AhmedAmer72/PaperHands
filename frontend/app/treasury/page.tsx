@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ConfirmAction, type ConfirmDetails } from "@/components/ConfirmAction";
+import { Field, FormError } from "@/components/Field";
 import { PageHead } from "@/components/PageChrome";
 import { Report } from "@/components/Report";
 import { CONTRACT_ID, ONE_YOCTO, TREASURY_CONTRACT_ID } from "@/lib/config";
@@ -56,8 +57,8 @@ export default function TreasuryPage() {
           <p>Accounting difference {books.accounting_difference}</p>
         </article>
       ) : null}
-      {!loaded && !error ? <p className="card p-5 text-sm">Reading treasury proposals.</p> : null}
-      {loaded && !error && proposals.length === 0 ? <p className="card p-5 text-sm">No proposals are stored yet.</p> : null}
+      {!loaded && !error ? <p aria-busy="true" className="card p-5 text-sm">Reading treasury proposals…</p> : null}
+      {loaded && !error && proposals.length === 0 ? <p className="card p-5 text-sm">No proposals yet. A donation stays here until two approvers and the timelock agree to spend it.</p> : null}
       <div className="grid gap-4">
         {proposals.map((item) => (
           <Link className="card block p-5" href={`/treasury/${item.proposal_id}`} key={item.proposal_id}>
@@ -68,33 +69,18 @@ export default function TreasuryPage() {
       </div>
       <form className="card grid gap-4 p-5" onSubmit={(event) => { event.preventDefault(); askDonation(); }}>
         <h2 className="font-display text-3xl">Donate PAPER</h2>
-        <label className="grid gap-1 text-sm">
-          Whole PAPER
-          <input className="rounded-2xl border border-ink/10 bg-white px-3 py-2" value={donation} onChange={(event) => setDonation(event.target.value)} />
-        </label>
+        <Field hint="Whole PAPER. This is a donation, not principal." inputMode="numeric" label="Whole PAPER" name="donation" value={donation} onChange={setDonation} />
         <button className="btn btn-pink w-fit" type="submit">Review donation</button>
       </form>
       <form className="card grid gap-4 p-5" onSubmit={(event) => { event.preventDefault(); askProposal(); }}>
         <h2 className="font-display text-3xl">Propose a spend</h2>
-        <label className="grid gap-1 text-sm">
-          Beneficiary account
-          <input className="rounded-2xl border border-ink/10 bg-white px-3 py-2" value={beneficiary} onChange={(event) => setBeneficiary(event.target.value)} />
-        </label>
-        <label className="grid gap-1 text-sm">
-          Amount, whole PAPER
-          <input className="rounded-2xl border border-ink/10 bg-white px-3 py-2" value={amount} onChange={(event) => setAmount(event.target.value)} />
-        </label>
-        <label className="grid gap-1 text-sm">
-          Milestone
-          <input className="rounded-2xl border border-ink/10 bg-white px-3 py-2" value={milestone} onChange={(event) => setMilestone(event.target.value)} />
-        </label>
-        <label className="grid gap-1 text-sm">
-          Public evidence reference
-          <input className="rounded-2xl border border-ink/10 bg-white px-3 py-2" value={evidence} onChange={(event) => setEvidence(event.target.value)} />
-        </label>
+        <Field autoComplete="username" label="Beneficiary account" name="beneficiary" value={beneficiary} onChange={setBeneficiary} />
+        <Field hint="Whole PAPER. This signature does not send it." inputMode="numeric" label="Amount" name="proposal-amount" value={amount} onChange={setAmount} />
+        <Field label="Milestone" name="milestone" value={milestone} onChange={setMilestone} />
+        <Field label="Public evidence reference" name="evidence" value={evidence} onChange={setEvidence} />
         <button className="btn btn-green w-fit" type="submit">Review proposal</button>
       </form>
-      {formError ? <p className="text-sm text-orange">{formError}</p> : null}
+      <FormError message={formError} />
       <ConfirmAction busy={wallet.busy} details={confirming} onCancel={() => setConfirming(null)} onConfirm={() => void sign()} />
       <Report report={report} />
     </section>
@@ -134,6 +120,7 @@ export default function TreasuryPage() {
       token: "No PAPER moves on this signature.",
       amount: paper(raw),
       role: "proposal, not a transfer",
+      subjectLabel: "Proposal",
       warning: "Creating a proposal does not reserve or send funds. Two different approvers and the timelock still have to pass, and the executor cannot be an approver.",
       refundPath: "Until both approvals reserve the amount, the donation stays available.",
     });

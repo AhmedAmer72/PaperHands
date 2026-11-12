@@ -53,8 +53,8 @@ export default function SponsorsPage() {
         </p>
       ) : null}
       {error ? <p className="card p-5 text-sm">SponsorHub did not answer. {error}</p> : null}
-      {!loaded && !error ? <p className="card p-5 text-sm">Reading campaigns from SponsorHub.</p> : null}
-      {loaded && !error && campaigns.length === 0 ? <p className="card p-5 text-sm">No campaigns are stored yet.</p> : null}
+      {!loaded && !error ? <p aria-busy="true" className="card p-5 text-sm">Reading campaigns…</p> : null}
+      {loaded && !error && campaigns.length === 0 ? <p className="card p-5 text-sm">No campaigns yet. Create one when you are ready to fund a reward pool.</p> : null}
       <div className="grid gap-4">
         {campaigns.map((item) => (
           <Link className="card block p-5" href={`/sponsors/${item.campaign_id}`} key={item.campaign_id}>

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ConfirmAction, type ConfirmDetails } from "@/components/ConfirmAction";
+import { Field, FormError } from "@/components/Field";
 import { PageHead } from "@/components/PageChrome";
 import { Report } from "@/components/Report";
 import { ONE_YOCTO, SPONSOR_CONTRACT_ID } from "@/lib/config";
@@ -72,14 +73,14 @@ export default function CreateSponsorPage() {
         title="Set the terms, then fund them."
       />
       <form className="card grid gap-4 p-5" onSubmit={(event) => { event.preventDefault(); ask(); }}>
-        <Field label="Name" value={name} onChange={setName} />
-        <Field label="Description" value={description} onChange={setDescription} />
-        <Field label="Public link" value={link} onChange={setLink} />
-        <Field label="Reward pool, whole PAPER" value={reward} onChange={setReward} />
-        <Field label="Minimum originals" value={minimum} onChange={setMinimum} />
-        <Field label="Retention percent" value={retention} onChange={setRetention} />
-        <Field label="Participant cap" value={cap} onChange={setCap} />
-        {formError ? <p className="text-sm text-orange">{formError}</p> : null}
+        <Field label="Name" name="campaign-name" value={name} onChange={setName} />
+        <Field label="Description" name="campaign-description" value={description} onChange={setDescription} />
+        <Field autoComplete="url" inputMode="url" label="Public link" name="campaign-link" type="url" value={link} onChange={setLink} />
+        <Field hint="Whole PAPER. Decimals are added when this is signed." inputMode="numeric" label="Reward pool" name="reward" value={reward} onChange={setReward} />
+        <Field hint="At least 25." inputMode="numeric" label="Minimum originals" name="minimum" value={minimum} onChange={setMinimum} />
+        <Field hint="At least 80." inputMode="numeric" label="Retention percent" name="retention" value={retention} onChange={setRetention} />
+        <Field hint="From the minimum up to 200. Cancelled seats still count." inputMode="numeric" label="Participant cap" name="cap" value={cap} onChange={setCap} />
+        <FormError message={formError} />
         <button className="btn btn-pink w-fit" type="submit">Review draft</button>
       </form>
       <ConfirmAction busy={wallet.busy} details={confirming} onCancel={() => setConfirming(null)} onConfirm={() => void sign()} />
@@ -88,11 +89,3 @@ export default function CreateSponsorPage() {
   );
 }
 
-function Field({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
-  return (
-    <label className="grid gap-1 text-sm">
-      {label}
-      <input className="rounded-2xl border border-ink/10 bg-white px-3 py-2" value={value} onChange={(event) => onChange(event.target.value)} />
-    </label>
-  );
-}

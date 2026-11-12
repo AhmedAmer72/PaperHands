@@ -25,7 +25,8 @@ export function PageNav() {
         const on = path === href;
         return (
           <Link
-            className={`shrink-0 rounded-full px-3 py-1.5 text-sm font-semibold ${on ? "bg-forest text-cream" : "bg-white text-ink/70 shadow-[0_0_40px_#00000010]"}`}
+            aria-current={on ? "page" : undefined}
+            className={`inline-flex min-h-11 shrink-0 items-center rounded-full px-3 text-sm font-semibold ${on ? "bg-forest text-cream" : "bg-white text-ink/70 shadow-[0_0_40px_#00000010]"}`}
             href={href}
             key={href}
           >
