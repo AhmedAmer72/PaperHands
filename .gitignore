@@ -1,0 +1,10 @@
+.agents/
+skills-lock.json
+.env
+**/.env
+!**/.env.example
+**/node_modules/
+**/.next/
+**/target/
+simulator/dist/
+*.wasm

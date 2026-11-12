@@ -1,0 +1,39 @@
+@import "tailwindcss";
+
+@theme {
+  --color-charcoal: #16161a;
+  --color-ink: #232228;
+  --color-paper: #f3efe4;
+  --color-cyan: #2ee6d6;
+  --color-violet: #7a5cff;
+  --color-orange: #ff7a2f;
+  --font-sans: "Iowan Old Style", Palatino, Georgia, serif;
+}
+
+html {
+  background: #16161a;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top left, rgba(122, 92, 255, 0.16), transparent 28rem),
+    #16161a;
+  color: #f3efe4;
+  font-family: "Iowan Old Style", Palatino, Georgia, serif;
+}
+
+a {
+  color: inherit;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
