@@ -54,13 +54,29 @@ Pages: `/`, `/how-it-works`, `/commitment`, `/paperhands-index`, `/epoch/[id]`, 
 
 ## Status of this build
 
-Passed locally: `cargo test --lib` (37), `cargo test --test test_basics` (3), `npm test` in `simulator` (5), `npm run build` in `frontend`.
+Re-run on 11 Nov 2026: `cargo test --lib` (38), `cargo test --test test_basics` (3), `npm test` in `simulator` (5).
 
-Deployed on Testnet as `diabloodevs.testnet`, demo init only. Not done: a live 25-account demo, and removal of the contract account's full-access key. The contract has no upgrade method, but the account can still deploy new code until that key is removed. Do not call this production-ready.
+Deployed on Testnet as `diabloodevs.testnet`, demo init only. The code hash matches the local wasm. Epoch 23 finished on Testnet: 25 accounts joined, one exited early for 950 PAPER, finalize minted 240 PAPER, and the 24 survivors claimed principal and rewards. Accounting difference stayed `0`. The full-access key on the contract account is still there, so the wasm can still be replaced. Do not call this production-ready or permanently immutable.
+
+Reports: [docs/IMPLEMENTATION_STATUS.md](docs/IMPLEMENTATION_STATUS.md), [docs/TEST_REPORT.md](docs/TEST_REPORT.md), [docs/TESTNET_ACCOUNTS.md](docs/TESTNET_ACCOUNTS.md), [docs/TESTNET_E2E_REPORT.md](docs/TESTNET_E2E_REPORT.md), [docs/SECURITY_AUDIT.md](docs/SECURITY_AUDIT.md), [docs/SYBIL_LIMITATIONS.md](docs/SYBIL_LIMITATIONS.md).
 
 Pins: `near-sdk` `=5.30.1` and `near-contract-standards` `=5.30.1`. See [docs/DEPENDENCIES.md](docs/DEPENDENCIES.md).
 
 License: MIT OR Apache-2.0. See [LICENSE](LICENSE).
+
+## Judge path on Testnet
+
+The live clock is a **1 hour** epoch and a **10 minute** entry window. That is the demo deployment, not the 7 day production clock.
+
+1. Open the app and connect a Testnet wallet. The contract id is `diabloodevs.testnet`.
+2. On Commitment, confirm the checkbox, register storage, then claim the faucet once. The balance becomes 1,000 PAPER. A second claim fails.
+3. Join while the page says the phase is `entry`. The wallet attaches 0.1 NEAR. The contract locks 1,000 PAPER.
+4. After entry closes, Early exit returns 950 PAPER, burns 25, and books 25 for survivors.
+5. After the hour, anyone can finalize the next ended epoch. Empty epochs that nobody joined burn 250 PAPER from the burn reserve, in order, before a later epoch can be finalized.
+6. Survivors claim principal (1,000 PAPER, no expiry) and claim rewards (equal mint plus equal bonus) on the epoch page.
+7. Activity shows a hash only after the RPC says `SuccessValue`, or from a hash you look up. The lab chart is labeled SIMULATION.
+
+The 25-account run is one operator. Read [docs/SYBIL_LIMITATIONS.md](docs/SYBIL_LIMITATIONS.md) next to those results. Hashes for that run are in [docs/TESTNET_E2E_REPORT.md](docs/TESTNET_E2E_REPORT.md).
 
 ## Visual design
 
