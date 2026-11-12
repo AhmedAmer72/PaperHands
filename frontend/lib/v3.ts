@@ -84,6 +84,27 @@ export type MissionView = {
   demo_clock: boolean;
 };
 
+export type MissionBooks = {
+  assets: string;
+  budget: string;
+  assigned: string;
+  refund: string;
+  pending: string;
+  accounting_difference: string;
+};
+
+export type SubmissionView = {
+  submission_id: string;
+  mission_id: string;
+  account_id: string;
+  evidence: string;
+  status: string;
+  reason: string;
+  payout: string;
+  pending: boolean;
+  claimed: boolean;
+};
+
 export type ProposalView = {
   proposal_id: string;
   proposer: string;
@@ -134,6 +155,23 @@ export function listMissions(contractId: string) {
 
 export function mission(contractId: string, missionId: string) {
   return viewAt<MissionView>(contractId, "get_mission", { mission_id: missionId });
+}
+
+export function missionBooks(contractId: string, missionId: string) {
+  return viewAt<MissionBooks>(contractId, "get_mission_accounting", { mission_id: missionId });
+}
+
+export function submission(contractId: string, submissionId: string) {
+  return viewAt<SubmissionView | null>(contractId, "get_submission", { submission_id: submissionId });
+}
+
+export function missionBudget(payoutEach: string, maxAcceptances: number): string | null {
+  try {
+    if (maxAcceptances < 1) return null;
+    return (BigInt(payoutEach) * BigInt(maxAcceptances)).toString();
+  } catch {
+    return null;
+  }
 }
 
 export function listProposals(contractId: string) {

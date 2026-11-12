@@ -45,7 +45,7 @@ export default function SponsorsPage() {
         <button className="btn btn-cream mt-4" disabled type="button">Quotes unavailable</button>
       </article>
       {config ? (
-        <p className="text-sm text-ink/70">
+        <p className="text-sm text-ink/70">Contract {SPONSOR_CONTRACT_ID}.{" "}
           {config.demo_clock
             ? "Demo clock: 1 hour, 10 minute entry. This is not a 7 day production campaign."
             : "Production clock: 7 days, 24 hour entry."}

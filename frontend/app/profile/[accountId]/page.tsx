@@ -1,12 +1,13 @@
 "use client";
 
+import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { PageHead } from "@/components/PageChrome";
 import { type CurrentEpoch, type UserEpochState, view } from "@/lib/chain";
-import { SPONSOR_CONTRACT_ID } from "@/lib/config";
+import { MISSION_CONTRACT_ID, SPONSOR_CONTRACT_ID } from "@/lib/config";
 import { paper } from "@/lib/format";
-import { type CampaignView, type ParticipantView, listCampaigns, participant } from "@/lib/v3";
+import { type CampaignView, type MissionView, type ParticipantView, listCampaigns, listMissions, participant } from "@/lib/v3";
 
 type Row = { campaign: CampaignView; position: ParticipantView };
 
@@ -16,7 +17,9 @@ export default function ProfilePage() {
   const [epoch, setEpoch] = useState<CurrentEpoch | null>(null);
   const [core, setCore] = useState<UserEpochState | null>(null);
   const [rows, setRows] = useState<Row[]>([]);
+  const [missions, setMissions] = useState<MissionView[]>([]);
   const [sponsorLoaded, setSponsorLoaded] = useState(false);
+  const [missionsLoaded, setMissionsLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -39,6 +42,14 @@ export default function ProfilePage() {
         setError((current) => current || (caught instanceof Error ? caught.message : String(caught)));
       } finally {
         setSponsorLoaded(true);
+      }
+      try {
+        const all = await listMissions(MISSION_CONTRACT_ID);
+        setMissions(all.filter((item) => item.sponsor_id === accountId || item.reviewer_id === accountId || item.escalation_id === accountId));
+      } catch (caught) {
+        setError((current) => current || (caught instanceof Error ? caught.message : String(caught)));
+      } finally {
+        setMissionsLoaded(true);
       }
     })();
   }, [accountId]);
@@ -63,14 +74,23 @@ export default function ProfilePage() {
         <ul className="mt-3 space-y-3 text-sm">
           {rows.map((row) => (
             <li key={row.campaign.campaign_id}>
-              {row.campaign.name}: {row.position.status}. This campaign does not change the Core streak.
+              <Link href={`/sponsors/${row.campaign.campaign_id}`}>{row.campaign.name}</Link>: {row.position.status}. This campaign does not change the Core streak.
             </li>
           ))}
         </ul>
       </article>
       <article className="card p-5">
         <h2 className="font-display text-3xl">Missions</h2>
-        <p className="mt-3 text-sm">Mission outcomes stay on the mission page. A completed mission is not a financial reputation score, and it is not added to either streak.</p>
+        {!missionsLoaded ? <p className="mt-3 text-sm">Reading MissionHub.</p> : null}
+        {missionsLoaded && missions.length === 0 ? <p className="mt-3 text-sm">No mission on {MISSION_CONTRACT_ID} names this account as sponsor, reviewer, or escalation.</p> : null}
+        <ul className="mt-3 space-y-3 text-sm">
+          {missions.map((item) => (
+            <li key={item.mission_id}>
+              <Link href={`/missions/${item.mission_id}`}>{item.objective}</Link>: {item.state}. This mission is not added to either streak.
+            </li>
+          ))}
+        </ul>
+        <p className="mt-3 text-sm text-ink/70">Mission outcomes stay on the mission page. A completed mission is not a financial reputation score.</p>
       </article>
     </section>
   );

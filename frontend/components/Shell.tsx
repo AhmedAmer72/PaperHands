@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { CONTRACT_ID, MAINNET_REFUSED, NETWORK } from "@/lib/config";
+import { CONTRACT_ID, MAINNET_REFUSED, MISSION_CONTRACT_ID, NETWORK, SPONSOR_CONTRACT_ID, TREASURY_CONTRACT_ID } from "@/lib/config";
 import { WalletProvider, useWallet } from "@/lib/wallet";
 
 const LINKS = [
@@ -76,7 +76,7 @@ function Bar() {
     <p className="mx-auto max-w-[1200px] px-5 pt-3 text-xs text-ink/70">
       {MAINNET_REFUSED
         ? "Mainnet is refused by this MVP."
-        : `Network ${NETWORK}. Contract ${CONTRACT_ID || "not connected"}. The faucet is not Sybil-proof.`}
+        : `Network ${NETWORK}. Core ${CONTRACT_ID || "not connected"}. Sponsor ${SPONSOR_CONTRACT_ID}. Missions ${MISSION_CONTRACT_ID}. Treasury ${TREASURY_CONTRACT_ID}. The faucet is not Sybil-proof.`}
       {wallet.error ? ` ${wallet.error}` : ""}
     </p>
     </>
