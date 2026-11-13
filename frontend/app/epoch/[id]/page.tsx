@@ -7,7 +7,7 @@ import { PageNav, Stat } from "@/components/PageChrome";
 import { Report } from "@/components/Report";
 import { type EpochDetail, type UserEpochState, contractReady, view } from "@/lib/chain";
 import { DEPOSIT_JOIN } from "@/lib/config";
-import { paper } from "@/lib/format";
+import { paper, timestampLabel } from "@/lib/format";
 import { type TxReport, useWallet } from "@/lib/wallet";
 
 export default function EpochPage() {
@@ -69,12 +69,12 @@ export default function EpochPage() {
             <Stat label="Mint / per survivor" value={`${paper(detail.minted)} / ${paper(detail.reward_per_survivor)}`} />
             <Stat label="Bonus pool / share" value={`${paper(detail.survivor_bonus_pool)} / ${paper(detail.bonus_per_survivor)}`} />
             <Stat label="Burns" note="Exit / reserve / dust" value={`${paper(detail.exit_burned)} · ${paper(detail.reserve_burned)} · ${paper(detail.dust_burned)}`} />
-            <Stat label="Your status" value={mine?.status ?? "not loaded"} />
+            <Stat label="Your status" value={wallet.accountId ? (mine?.status ?? "—") : "wallet off"} />
             <Stat label="Claimable" note="Principal / mint / bonus" value={mine ? `${paper(mine.claimable_principal)} · ${paper(mine.claimable_mint)} · ${paper(mine.claimable_bonus)}` : "—"} />
-            <Stat label="Reward deadline" value={detail.reward_claim_deadline_ns ?? "opens at finalization"} />
+            <Stat label="Reward deadline" value={detail.reward_claim_deadline_ns ? timestampLabel(detail.reward_claim_deadline_ns) : "opens at finalization"} />
           </div>
           <div className="card p-5 text-sm text-ink/70">
-            <p className="break-all">Window {detail.start_ns} → entry {detail.entry_end_ns} → end {detail.end_ns}</p>
+            <p className="break-all">Window {timestampLabel(detail.start_ns)} → entry {timestampLabel(detail.entry_end_ns)} → end {timestampLabel(detail.end_ns)}</p>
             <p className="mt-2">Rewards swept: {String(detail.rewards_swept)}. Unclaimed mint left {paper(detail.unclaimed_mint_remaining)}. Unclaimed bonus left {paper(detail.unclaimed_bonus_remaining)}.</p>
             {mine ? <p className="mt-2">Principal claim open: {String(mine.principal_claim_open)}. Rewards claim open: {String(mine.rewards_claim_open)}. Rewards already claimed: {String(mine.rewards_claimed)}.</p> : null}
           </div>

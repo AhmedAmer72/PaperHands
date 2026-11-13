@@ -18,6 +18,17 @@ export function durationLabel(ns: string | undefined, kind: string | undefined):
   return `${ns} ns`;
 }
 
+export function timestampLabel(ns: string | null | undefined): string {
+  if (!ns) return "—";
+  try {
+    const ms = Number(BigInt(ns) / 1_000_000n);
+    if (!Number.isFinite(ms) || ms < 1_000_000_000_000) return ns;
+    return new Date(ms).toISOString();
+  } catch {
+    return ns;
+  }
+}
+
 export function remaining(nowNs: string, endNs: string): string {
   try {
     const left = BigInt(endNs) - BigInt(nowNs);

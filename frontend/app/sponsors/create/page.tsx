@@ -14,7 +14,7 @@ export default function CreateSponsorPage() {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [link, setLink] = useState("");
-  const [reward, setReward] = useState("1000");
+  const [reward, setReward] = useState("");
   const [minimum, setMinimum] = useState("25");
   const [retention, setRetention] = useState("80");
   const [cap, setCap] = useState("25");

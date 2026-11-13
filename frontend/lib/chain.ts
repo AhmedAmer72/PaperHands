@@ -1,8 +1,34 @@
 import { JsonRpcProvider } from "near-api-js";
-import { CONTRACT_ID, RPC_URL } from "./config";
+import { CONTRACT_ID, NETWORK, RPC_URL } from "./config";
+
+const PUBLIC_TESTNET_RPC = "https://rpc.testnet.near.org";
+const FASTNEAR_TESTNET_RPC = "https://test.rpc.fastnear.com";
+
+const readFallback = NETWORK === "testnet"
+  ? (RPC_URL === PUBLIC_TESTNET_RPC ? PUBLIC_TESTNET_RPC : FASTNEAR_TESTNET_RPC)
+  : "";
+
+let readUrl = NETWORK === "testnet" && RPC_URL === PUBLIC_TESTNET_RPC ? FASTNEAR_TESTNET_RPC : RPC_URL;
 
 export function provider() {
-  return new JsonRpcProvider({ url: RPC_URL });
+  return new JsonRpcProvider({ url: readUrl });
+}
+
+async function callFunction<T>(contractId: string, method: string, args: Record<string, unknown>): Promise<T> {
+  const urls = [readUrl];
+  if (readFallback && readFallback !== readUrl && !urls.includes(readFallback)) urls.push(readFallback);
+  let last: unknown;
+  for (const url of urls) {
+    try {
+      const result = await new JsonRpcProvider({ url }).callFunction({ contractId, method, args });
+      if (result === undefined) throw new Error(`${method} returned an empty result`);
+      readUrl = url;
+      return result as T;
+    } catch (error) {
+      last = error;
+    }
+  }
+  throw last instanceof Error ? last : new Error(String(last));
 }
 
 export function contractReady(): string | null {
@@ -12,21 +38,26 @@ export function contractReady(): string | null {
 
 export async function viewAt<T>(contractId: string, method: string, args: Record<string, unknown> = {}): Promise<T> {
   if (!contractId) throw new Error("That contract is not configured. No transaction was sent.");
-  const result = await provider().callFunction({ contractId, method, args });
-  if (result === undefined) throw new Error(`${method} returned an empty result`);
-  return result as T;
+  return callFunction<T>(contractId, method, args);
 }
 
 export async function view<T>(method: string, args: Record<string, unknown> = {}): Promise<T> {
   const missing = contractReady();
   if (missing) throw new Error(missing);
-  const result = await provider().callFunction({
-    contractId: CONTRACT_ID,
-    method,
-    args,
-  });
-  if (result === undefined) throw new Error(`${method} returned an empty result`);
-  return result as T;
+  return callFunction<T>(CONTRACT_ID, method, args);
+}
+
+export async function viewEpochs(firstId: number, lastId: number): Promise<EpochDetail[]> {
+  if (!Number.isInteger(firstId) || !Number.isInteger(lastId) || firstId < 0 || lastId < firstId) return [];
+  const rows: EpochDetail[] = [];
+  const size = 6;
+  for (let start = firstId; start <= lastId; start += size) {
+    const ids: number[] = [];
+    for (let id = start; id <= Math.min(lastId, start + size - 1); id += 1) ids.push(id);
+    const batch = await Promise.all(ids.map((id) => view<EpochDetail>("get_epoch", { epoch_id: String(id) })));
+    rows.push(...batch);
+  }
+  return rows;
 }
 
 export type CurrentEpoch = {

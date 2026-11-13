@@ -4,18 +4,20 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { PageHead } from "@/components/PageChrome";
-import { type CurrentEpoch, type UserEpochState, view } from "@/lib/chain";
+import { type CurrentEpoch, type EpochDetail, type UserEpochState, view, viewEpochs } from "@/lib/chain";
 import { MISSION_CONTRACT_ID, SPONSOR_CONTRACT_ID } from "@/lib/config";
 import { paper } from "@/lib/format";
 import { type CampaignView, type MissionView, type ParticipantView, listCampaigns, listMissions, participant } from "@/lib/v3";
 
 type Row = { campaign: CampaignView; position: ParticipantView };
+type CoreRow = { epoch: EpochDetail; state: UserEpochState };
 
 export default function ProfilePage() {
   const params = useParams<{ accountId: string }>();
   const accountId = decodeURIComponent(params.accountId);
   const [epoch, setEpoch] = useState<CurrentEpoch | null>(null);
   const [core, setCore] = useState<UserEpochState | null>(null);
+  const [coreRows, setCoreRows] = useState<CoreRow[]>([]);
   const [rows, setRows] = useState<Row[]>([]);
   const [missions, setMissions] = useState<MissionView[]>([]);
   const [sponsorLoaded, setSponsorLoaded] = useState(false);
@@ -28,6 +30,16 @@ export default function ProfilePage() {
         const current = await view<CurrentEpoch>("get_current_epoch");
         setEpoch(current);
         setCore(await view<UserEpochState>("get_user_epoch_state", { epoch_id: current.epoch_id, account_id: accountId }));
+        const epochs = await viewEpochs(0, Number(current.epoch_id));
+        const found: CoreRow[] = [];
+        for (let index = 0; index < epochs.length; index += 6) {
+          const slice = epochs.slice(index, index + 6);
+          const states = await Promise.all(slice.map((row) => view<UserEpochState>("get_user_epoch_state", { epoch_id: row.epoch_id, account_id: accountId })));
+          slice.forEach((row, offset) => {
+            if (states[offset]?.status) found.push({ epoch: row, state: states[offset] });
+          });
+        }
+        setCoreRows(found.reverse());
       } catch (caught) {
         setError(caught instanceof Error ? caught.message : String(caught));
       }
@@ -66,6 +78,14 @@ export default function ProfilePage() {
         <h2 className="font-display text-3xl">Diamond Core</h2>
         <p className="mt-3 text-sm">Epoch {epoch?.epoch_id ?? "—"} · status {core ? core.status ?? "no commitment in this epoch" : "no commitment read"} · claimable principal {paper(core?.claimable_principal)}</p>
         <p className="mt-2 text-sm text-ink/70">Core streak is the protocol streak on the Diamond contract. It is not a personal score and it is not combined with sponsor campaigns.</p>
+        {coreRows.length === 0 ? <p className="mt-3 text-sm">No epoch from 0 through the current one has a commitment for this account.</p> : null}
+        <ul className="mt-3 space-y-2 text-sm">
+          {coreRows.map((row) => (
+            <li key={row.epoch.epoch_id}>
+              <Link href={`/epoch/${row.epoch.epoch_id}`}>Epoch {row.epoch.epoch_id}</Link>: {row.state.status}. Claimable principal {paper(row.state.claimable_principal)}.
+            </li>
+          ))}
+        </ul>
       </article>
       <article className="card p-5">
         <h2 className="font-display text-3xl">Sponsor campaigns</h2>

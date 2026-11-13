@@ -18,9 +18,9 @@ export default function TreasuryPage() {
   const [proposals, setProposals] = useState<ProposalView[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [donation, setDonation] = useState("1");
+  const [donation, setDonation] = useState("");
   const [beneficiary, setBeneficiary] = useState("");
-  const [amount, setAmount] = useState("1");
+  const [amount, setAmount] = useState("");
   const [milestone, setMilestone] = useState("");
   const [evidence, setEvidence] = useState("");
   const [formError, setFormError] = useState<string | null>(null);

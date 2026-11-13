@@ -8,6 +8,7 @@ import {
   type ProtocolBalances,
   contractReady,
   view,
+  viewEpochs,
 } from "@/lib/chain";
 import { CONTRACT_ID } from "@/lib/config";
 import { deploymentBanner, durationLabel, paper } from "@/lib/format";
@@ -15,11 +16,14 @@ import { useWallet } from "@/lib/wallet";
 
 type LocalTx = { hash: string | null; method: string; ok: boolean; detail: string; at?: number };
 
-type RemoteTx = {
-  hash: string;
-  signer: string;
-  method: string;
-  when: string;
+type Economics = {
+  initial_supply: string;
+  faucet_cap: string;
+  max_mint_per_epoch: string;
+  min_participants: number;
+  retention_numerator: number;
+  retention_denominator: number;
+  early_exit_penalty_bps: number;
 };
 
 const STEPS = [
@@ -36,12 +40,12 @@ export function HomeExperience() {
   const [epoch, setEpoch] = useState<CurrentEpoch | null>(null);
   const [books, setBooks] = useState<ProtocolBalances | null>(null);
   const [history, setHistory] = useState<EpochDetail[]>([]);
+  const [historyLoaded, setHistoryLoaded] = useState(false);
   const [currentDetail, setCurrentDetail] = useState<EpochDetail | null>(null);
+  const [economics, setEconomics] = useState<Economics | null>(null);
   const [balance, setBalance] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(contractReady());
   const [localTxs, setLocalTxs] = useState<LocalTx[]>([]);
-  const [remote, setRemote] = useState<RemoteTx[]>([]);
-  const [remoteNote, setRemoteNote] = useState<string | null>(CONTRACT_ID ? null : "No contract is configured, so this feed has no chain history to show.");
 
   useEffect(() => {
     const stored = JSON.parse(window.localStorage.getItem("paperhands.txs") || "[]") as LocalTx[];
@@ -66,24 +70,29 @@ export function HomeExperience() {
   }, []);
 
   useEffect(() => {
-    if (contractReady()) return;
+    if (contractReady()) {
+      setHistoryLoaded(true);
+      return;
+    }
     let cancelled = false;
     void (async () => {
       try {
         const current = await view<CurrentEpoch>("get_current_epoch");
         const balances = await view<ProtocolBalances>("get_protocol_balances");
-        const next = Number(current.next_epoch_to_finalize);
-        const ids = Array.from({ length: Math.min(Math.max(next, 0), 24) }, (_, index) => index);
-        const settled = await Promise.all(ids.map((id) => view<EpochDetail>("get_epoch", { epoch_id: String(id) })));
-        const open = await view<EpochDetail>("get_epoch", { epoch_id: current.epoch_id });
+        const config = await view<Economics>("get_economic_config");
         if (cancelled) return;
         setEpoch(current);
         setBooks(balances);
-        setCurrentDetail(open);
-        setHistory(settled.filter((item) => item.finalized));
+        setEconomics(config);
         setError(null);
+        const details = await viewEpochs(0, Number(current.epoch_id));
+        if (cancelled) return;
+        setCurrentDetail(details.find((item) => item.epoch_id === current.epoch_id) ?? null);
+        setHistory(details.filter((item) => item.finalized));
       } catch (caught) {
         if (!cancelled) setError(caught instanceof Error ? caught.message : String(caught));
+      } finally {
+        if (!cancelled) setHistoryLoaded(true);
       }
     })();
     return () => {
@@ -95,39 +104,6 @@ export function HomeExperience() {
     if (!wallet.accountId || contractReady()) return;
     void view<string>("ft_balance_of", { account_id: wallet.accountId }).then(setBalance).catch(() => setBalance(null));
   }, [wallet.accountId]);
-
-  useEffect(() => {
-    if (!CONTRACT_ID) return;
-    let cancelled = false;
-    void fetch(`https://api-testnet.nearblocks.io/v1/account/${CONTRACT_ID}/txns?page=1&per_page=12`).then(async (response) => {
-      const body = await response.text();
-      if (!response.ok) throw new Error(`NearBlocks HTTP ${response.status}`);
-      const parsed = JSON.parse(body) as { txns?: unknown };
-      if (!Array.isArray(parsed.txns)) throw new Error("NearBlocks did not return a txns array.");
-      const rows: RemoteTx[] = [];
-      for (const item of parsed.txns) {
-        if (!item || typeof item !== "object") continue;
-        const tx = item as Record<string, unknown>;
-        const hash = typeof tx.transaction_hash === "string" ? tx.transaction_hash : "";
-        if (!hash) continue;
-        const actions = Array.isArray(tx.actions) ? tx.actions : [];
-        const first = actions[0] && typeof actions[0] === "object" ? actions[0] as Record<string, unknown> : {};
-        const method = typeof first.method === "string" ? first.method : typeof tx.method === "string" ? tx.method : "transaction";
-        const signer = typeof tx.signer_account_id === "string" ? tx.signer_account_id : "—";
-        const stamp = typeof tx.block_timestamp === "string" || typeof tx.block_timestamp === "number" ? String(tx.block_timestamp) : "";
-        rows.push({ hash, signer, method, when: stamp ? stampFromNs(stamp) : "timestamp not in the response" });
-      }
-      if (!cancelled) {
-        setRemote(rows);
-        setRemoteNote(rows.length ? null : "NearBlocks returned no transactions for this contract.");
-      }
-    }).catch((caught: unknown) => {
-      if (!cancelled) setRemoteNote(caught instanceof Error ? caught.message : String(caught));
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   const last = history.at(-1) ?? null;
   const successes = history.filter((item) => item.success === true).length;
@@ -240,10 +216,10 @@ export function HomeExperience() {
           <Rule delay={0} term="Commitment" value="1,000 PAPER" />
           <Rule delay={0.06} term="Production duration" value="7 days" />
           <Rule delay={0.12} term="This deployment" value={durationLabel(epoch?.epoch_duration_ns, epoch?.deployment_kind)} />
-          <Rule delay={0.18} term="Early exit penalty" value="5%" />
-          <Rule delay={0.24} term="Retention target" value="80%" />
-          <Rule delay={0.3} term="Minimum participants" value="25" />
-          <Rule delay={0.36} term="Maximum epoch mint" value="500 PAPER" />
+          <Rule delay={0.18} term="Early exit penalty" value={economics ? `${Number(economics.early_exit_penalty_bps) / 100}%` : "—"} />
+          <Rule delay={0.24} term="Retention target" value={retentionLabel(economics)} />
+          <Rule delay={0.3} term="Minimum participants" value={economics ? String(economics.min_participants) : "—"} />
+          <Rule delay={0.36} term="Maximum epoch mint" value={economics ? paper(economics.max_mint_per_epoch) : "—"} />
         </dl>
         <p className="mt-6 max-w-3xl text-lg">
           50% of early-exit penalties are burned, while the remaining 50% rewards participants who stay committed.
@@ -293,7 +269,7 @@ export function HomeExperience() {
             <ul className="mt-4 space-y-2">
               {history.map((item) => (
                 <li className="grid grid-cols-[4rem_1fr_4rem] items-center gap-3 text-sm" key={item.epoch_id}>
-                  <span>#{item.epoch_id}</span>
+                  <Link className="font-semibold" href={`/epoch/${item.epoch_id}`}>#{item.epoch_id}</Link>
                   <span className="h-2 rounded-full bg-cream">
                     <span className="block h-2 rounded-full bg-forest" style={{ width: `${((item.retention_bps ?? 0) / widest) * 100}%` }} />
                   </span>
@@ -303,7 +279,7 @@ export function HomeExperience() {
             </ul>
           </div>
         ) : (
-          <p className="mt-6 text-ink/70">No finalized epoch has been read. The chart stays blank.</p>
+          <p className="mt-6 text-ink/70">{error ? error : historyLoaded ? "No finalized epoch has been read." : "Reading every epoch from the contract."}</p>
         )}
         <Link className="btn btn-pink mt-6" href="/paperhands-index">Open the index</Link>
       </section>
@@ -314,18 +290,18 @@ export function HomeExperience() {
         <div className="mt-8 grid gap-4 md:grid-cols-3">
           <article className="rounded-[2rem] bg-forest p-6 text-cream" data-reveal>
             <p className="text-sm">Initial supply</p>
-            <p className="mt-3 font-display text-5xl">1,000,000</p>
-            <p className="mt-2 text-sm text-cream/80">PAPER, 8 decimals. Minted once at init.</p>
+            <p className="mt-3 font-display text-4xl">{economics ? paper(economics.initial_supply) : "—"}</p>
+            <p className="mt-2 text-sm text-cream/80">Minted once at init. Read from the contract.</p>
           </article>
           <article className="rounded-[2rem] bg-pink p-6 text-ink" data-reveal style={wait(0.1)}>
-            <p className="text-sm">Community / testnet</p>
-            <p className="mt-3 font-display text-5xl">700,000</p>
-            <p className="mt-2 text-sm">Faucet reserve. Claims move it. They do not mint.</p>
+            <p className="text-sm">Faucet reserve</p>
+            <p className="mt-3 font-display text-4xl">{paper(books?.faucet_reserve)}</p>
+            <p className="mt-2 text-sm">Live balance. Init cap {economics ? paper(economics.faucet_cap) : "—"}. Claims do not mint.</p>
           </article>
           <article className="rounded-[2rem] bg-charcoal p-6 text-cream" data-reveal style={wait(0.2)}>
             <p className="text-sm">Burn reserve</p>
-            <p className="mt-3 font-display text-5xl">300,000</p>
-            <p className="mt-2 text-sm text-cream/80">Failed epochs burn up to 250 PAPER from here.</p>
+            <p className="mt-3 font-display text-4xl">{paper(books?.burn_reserve)}</p>
+            <p className="mt-2 text-sm text-cream/80">Live balance. Failed epochs burn from here.</p>
           </article>
         </div>
         <div className="card mt-4 grid gap-4 p-6 md:grid-cols-2" data-reveal="soft">
@@ -341,7 +317,7 @@ export function HomeExperience() {
         <p className="eyebrow">Live activity</p>
         <h2 className="display-md mt-3">Only receipts we can point at</h2>
         <p className="mt-3 max-w-2xl text-ink/75">
-          Browser rows are transactions this wallet flow stored after an RPC SuccessValue. Contract rows come from NearBlocks for the configured account. If either source is empty, the list stays empty.
+          Browser rows are transactions this wallet stored after an RPC SuccessValue. Settled rows are get_epoch views for every epoch from 0 through the current one. This page does not invent hashes.
         </p>
         <div className="mt-6 grid gap-4 lg:grid-cols-2">
           <div className="card p-5" data-reveal>
@@ -357,17 +333,13 @@ export function HomeExperience() {
             </ul>
           </div>
           <div className="card p-5" data-reveal style={wait(0.1)}>
-            <h3 className="font-display text-3xl">Contract account</h3>
-            {remoteNote ? <p className="mt-4 text-sm text-ink/70">{remoteNote}</p> : null}
-            <ul className="mt-4 space-y-3 text-sm">
-              {remote.map((tx) => (
-                <li key={tx.hash}>
-                  <p className="font-semibold">{tx.method}</p>
-                  <p>{tx.signer}</p>
-                  <p className="text-ink/70">{tx.when}</p>
-                  <a className="break-all text-forest" href={`https://testnet.nearblocks.io/txns/${tx.hash}`}>
-                    {tx.hash}
-                  </a>
+            <h3 className="font-display text-3xl">Settled epochs</h3>
+            <ul className="mt-4 max-h-80 space-y-3 overflow-y-auto text-sm">
+              {history.length === 0 ? <li className="text-ink/60">{error ? error : historyLoaded ? "No finalized epoch has been read." : "Reading every epoch from the contract."}</li> : null}
+              {[...history].reverse().map((item) => (
+                <li key={item.epoch_id}>
+                  <Link className="font-semibold text-forest" href={`/epoch/${item.epoch_id}`}>Epoch {item.epoch_id}</Link>
+                  <p>{item.success ? "Finalized success" : "Finalized failure"} · {item.original_participants ?? 0} original · {item.early_exits} exits</p>
                 </li>
               ))}
             </ul>
@@ -408,7 +380,7 @@ export function HomeExperience() {
           <li><a href="https://near.org">NEAR Protocol</a></li>
           <li><a href="https://github.com/AhmedAmer72/PaperHands">GitHub</a></li>
           <li><Link href="/rules">Token rules</Link></li>
-          <li><a href="https://github.com/AhmedAmer72/PaperHands/blob/cursor/paperhands-visual-craft-6643/README.md">Documentation</a></li>
+          <li><a href="https://github.com/AhmedAmer72/PaperHands">Documentation</a></li>
           {CONTRACT_ID ? <li><a href={`https://testnet.nearblocks.io/address/${CONTRACT_ID}`}>Contract explorer</a></li> : <li>Contract explorer appears after a deployment id is set</li>}
         </ul>
         <p className="mt-4 text-xs text-ink/60">Social accounts are not configured. No extra profile links are invented here.</p>
@@ -426,14 +398,11 @@ function sumBurns(books: ProtocolBalances | null) {
   }
 }
 
-function stampFromNs(value: string) {
-  try {
-    const ms = Number(BigInt(value) / 1_000_000n);
-    if (!Number.isFinite(ms) || ms < 1_000_000_000_000) return value;
-    return new Date(ms).toISOString();
-  } catch {
-    return value;
-  }
+function retentionLabel(config: Economics | null) {
+  if (!config) return "—";
+  const denominator = Number(config.retention_denominator);
+  if (!denominator) return "—";
+  return `${Math.round((Number(config.retention_numerator) / denominator) * 100)}%`;
 }
 
 function wait(seconds: number): CSSProperties {
