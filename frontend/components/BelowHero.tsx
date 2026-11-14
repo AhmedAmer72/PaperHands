@@ -58,23 +58,16 @@ export function BelowHero({
 
   return (
     <>
-      <Statement clockReady={clockReady} entry={entry} hold={hold} />
-
-      <section className="home-block" id="rules">
-        <Reveal>
-          <h2 className="display-md max-w-3xl">The rule is the product.</h2>
-        </Reveal>
-        <div className="col-cards">
-          {RULES.map((rule, index) => (
-            <Reveal key={rule.title} className={`col-card shift-${index}`} delay={index * 0.08}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img alt="" height={1024} src={rule.src} width={rule.width} />
-              <h3>{rule.title}</h3>
-              <p>{index === 1 ? `Stay through the epoch, or exit early and receive ${earlyReturn}.` : rule.body}</p>
-            </Reveal>
-          ))}
-        </div>
-      </section>
+      <Mission
+        cards={RULES.map((rule, index) => ({
+          ...rule,
+          body: index === 1 ? `Stay through the epoch, or exit early and receive ${earlyReturn}.` : rule.body,
+          flip: index % 2 === 1,
+        }))}
+        clockReady={clockReady}
+        entry={entry}
+        hold={hold}
+      />
 
       <section className="parcours" id="path">
         <div className="parcours-sticky">
@@ -153,26 +146,88 @@ export function BelowHero({
   );
 }
 
-function Statement({ clockReady, hold, entry }: { clockReady: boolean; hold: string; entry: string }) {
+function Mission({
+  clockReady,
+  hold,
+  entry,
+  cards,
+}: {
+  clockReady: boolean;
+  hold: string;
+  entry: string;
+  cards: { src: string; width: number; title: string; body: string; flip: boolean }[];
+}) {
   const reduce = useReducedMotion();
-  const copy = clockReady ? (
-    <>
-      <span className="marker">{hold}</span> to hold. <span className="marker">{entry}</span> to enter.
-    </>
-  ) : (
-    "The clock is read from the contract."
-  );
-  if (reduce) return <p className="calm-line">{copy}</p>;
+  const [drawn, setDrawn] = useState(false);
+  const kicker = clockReady ? `${hold} to hold. ${entry} to enter.` : "The clock is on the contract.";
   return (
-    <motion.p
-      className="calm-line"
-      initial={{ opacity: 0, y: 36, rotate: 1.5 }}
-      whileInView={{ opacity: 1, y: 0, rotate: 0 }}
-      viewport={{ once: true, amount: 0.6 }}
-      transition={{ duration: 0.55, ease: POP }}
+    <section className="mission" id="rules">
+      <motion.p
+        className="mission-kicker"
+        initial={reduce ? false : { opacity: 0, y: 12 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.8 }}
+        transition={{ duration: 0.45, ease: POP }}
+      >
+        {kicker}
+      </motion.p>
+      <h2 className="mission-title display-md">
+        <motion.span
+          className="mission-line"
+          initial={reduce ? false : { opacity: 0, y: 28, rotate: 2 }}
+          whileInView={{ opacity: 1, y: 0, rotate: 0 }}
+          viewport={{ once: true, amount: 0.7 }}
+          transition={{ duration: 0.55, ease: POP }}
+        >
+          Beyond a simple hold :
+        </motion.span>
+        <motion.span
+          className="mission-line"
+          initial={reduce ? false : { opacity: 0, y: 28, rotate: -1.5 }}
+          whileInView={{ opacity: 1, y: 0, rotate: 0 }}
+          viewport={{ once: true, amount: 0.7 }}
+          onViewportEnter={() => setDrawn(true)}
+          transition={{ duration: 0.55, delay: 0.08, ease: POP }}
+        >
+          <span className={drawn || reduce ? "marker drawn" : "marker"}>The rule</span>
+        </motion.span>
+      </h2>
+      <div className="mission-stack">
+        {cards.map((card, index) => (
+          <MissionCard card={card} index={index} key={card.title} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function MissionCard({
+  card,
+  index,
+}: {
+  card: { src: string; width: number; title: string; body: string; flip: boolean };
+  index: number;
+}) {
+  const ref = useRef<HTMLElement>(null);
+  const reduce = useReducedMotion();
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
+  const lift = index % 2 === 1 ? [64, 0, -40] : [48, 0, 22];
+  const tilt = index % 2 === 1 ? [2.2, 0, -1.1] : [-1.4, 0, 0.7];
+  const y = useTransform(scrollYProgress, [0, 0.32, 1], lift);
+  const rotate = useTransform(scrollYProgress, [0, 0.32, 1], tilt);
+  return (
+    <motion.article
+      ref={ref}
+      className={`mission-card shift-${index} ${card.flip ? "flip" : ""}`}
+      style={reduce ? undefined : { y, rotate }}
     >
-      {copy}
-    </motion.p>
+      <div>
+        <h3>{card.title}</h3>
+        <p>{card.body}</p>
+      </div>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img alt="" height={1024} src={card.src} width={card.width} />
+    </motion.article>
   );
 }
 

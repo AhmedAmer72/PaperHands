@@ -496,43 +496,94 @@ details.faq p {
   line-height: 1.55;
 }
 
-.calm-line {
-  max-width: 16ch;
-  margin: 5.5rem auto 0;
-  text-align: center;
-  font-family: Anton, "Arial Narrow", Impact, sans-serif;
-  font-size: clamp(2.6rem, 6vw, 4.6rem);
-  line-height: 0.95;
-  letter-spacing: -0.02em;
-}
-
 .home-block {
   max-width: 1100px;
   margin: 7.5rem auto 0;
 }
 
-.col-cards {
+.mission {
+  max-width: 1100px;
+  margin: 5.5rem auto 0;
+}
+
+.mission-kicker {
+  text-align: center;
+  color: #09543d;
+  font-size: 0.98rem;
+  font-weight: 600;
+}
+
+.mission-title {
+  margin-top: 0.85rem;
+  text-align: center;
+  color: #09543d;
+}
+
+.mission-line {
+  display: block;
+}
+
+.mission-title .marker {
+  background-position: 0 58%;
+  background-size: 0% 86%;
+  padding: 0.04em 0.14em 0.08em;
+}
+
+.mission-title .marker.drawn {
+  background-size: 100% 86%;
+}
+
+.mission-stack {
   display: flex;
-  flex-wrap: wrap;
-  gap: 1.5rem;
-  margin-top: 3rem;
+  flex-direction: column;
+  gap: 1.15rem;
+  margin-top: 3.4rem;
 }
 
-.col-card {
+.mission-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
   width: 100%;
-  border-radius: 2.4rem;
+  border-radius: 1.7rem;
   background: #fff;
-  padding: 1.6rem 1.6rem 1.8rem;
-  box-shadow: 0 18px 46px #00000012;
+  padding: 1.35rem 1.45rem;
+  box-shadow: 0 18px 42px #00000012;
 }
 
-.col-card img,
+.mission-card.flip {
+  flex-direction: row-reverse;
+}
+
+.mission-card h3 {
+  color: #09543d;
+  font-size: clamp(1.25rem, 2vw, 1.55rem);
+  font-weight: 600;
+  line-height: 1.15;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.mission-card p {
+  max-width: 32ch;
+  margin-top: 0.4rem;
+  color: #09543d;
+  font-size: 0.92rem;
+  line-height: 1.35;
+}
+
+.mission-card img {
+  height: 5.8rem;
+  width: auto;
+  flex: none;
+}
+
 .parcours-hand {
   height: 8.5rem;
   width: auto;
 }
 
-.col-card h3,
 .path h3,
 .path-step h3 {
   margin-top: 1.1rem;
@@ -542,7 +593,6 @@ details.faq p {
   line-height: 1;
 }
 
-.col-card p,
 .path p,
 .path-step p {
   max-width: 36ch;
@@ -714,16 +764,20 @@ details.faq p {
 }
 
 @media (min-width: 800px) {
-  .col-card {
-    width: 40.9%;
+  .mission-card {
+    width: 64%;
   }
 
-  .col-card.shift-1 {
-    margin-left: calc(9% - 0.75rem);
+  .mission-card.shift-0 {
+    margin-left: 4%;
   }
 
-  .col-card.shift-2 {
-    margin-left: calc(18% - 1.5rem);
+  .mission-card.shift-1 {
+    margin-left: 30%;
+  }
+
+  .mission-card.shift-2 {
+    margin-left: 12%;
   }
 
   .parcours {
