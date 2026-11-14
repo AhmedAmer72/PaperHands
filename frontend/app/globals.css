@@ -301,7 +301,15 @@ h2,
 }
 
 .hero-copy {
-  padding-inline: clamp(1.5rem, 8vw, 7rem);
+  width: 100%;
+  padding-inline: clamp(0.25rem, 1vw, 0.75rem);
+}
+
+.hero-copy .hero-title {
+  font-size: clamp(1.4rem, 6.6vw, 7.2rem);
+  line-height: 0.88;
+  letter-spacing: -0.045em;
+  white-space: nowrap;
 }
 
 section {

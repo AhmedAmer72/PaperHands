@@ -113,12 +113,10 @@ export function HomeExperience() {
               <img alt="" height={1024} src="/assets/paperhands/illustrations/diamond.png" width={775} />
             </div>
           </div>
-          <div className="hero-copy relative z-10 mx-auto max-w-3xl text-center" data-reveal="soft">
+          <div className="hero-copy relative z-10 text-center" data-reveal="soft">
             <p className="text-sm font-semibold text-cream">Don&apos;t just hold. Prove it.</p>
-            <h1 className="display mt-4">
-              Weak hands.
-              <br />
-              <span className="marker">Strong rules.</span>
+            <h1 className="display hero-title mt-4">
+              Weak hands. <span className="marker">Strong rules.</span>
             </h1>
             <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-cream/90 md:text-lg">
               Lock your PAPER. Stand with the community. Let your commitment speak on-chain.
