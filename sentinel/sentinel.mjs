@@ -50,14 +50,15 @@ async function main() {
   const contractId = process.env.SPONSOR_CONTRACT_ID || "sponsor.diabloodevs.testnet";
   const config = await view(rpc, contractId, "get_protocol_config", {});
   const campaigns = [];
-  let from = 1;
+  let from = "1";
   for (let page = 0; page < 40; page += 1) {
-    const chunk = await view(rpc, contractId, "list_campaigns", { from_index: String(from), limit: "50" });
-    if (!Array.isArray(chunk) || chunk.length === 0) break;
-    campaigns.push(...chunk);
-    const last = Number(chunk[chunk.length - 1].campaign_id);
-    if (!Number.isFinite(last) || chunk.length < 50) break;
-    from = last + 1;
+    const batch = await view(rpc, contractId, "list_campaigns", { from_index: from, limit: "50" });
+    if (!Array.isArray(batch) || batch.length === 0) break;
+    campaigns.push(...batch);
+    if (batch.length < 50) break;
+    const last = batch[batch.length - 1]?.campaign_id;
+    if (!last) break;
+    from = (BigInt(last) + 1n).toString();
   }
   const now = BigInt(Date.now()) * 1_000_000n;
   const actions = [];

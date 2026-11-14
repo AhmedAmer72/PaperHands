@@ -14,7 +14,8 @@ fi
 if [[ -z "$contract" ]]; then
   echo "No PAPERHANDS_CONTRACT_ID. Nothing to query."
   echo "After a Testnet deploy, this script calls ft_metadata, ft_total_supply, get_economic_config, get_faucet_status."
-  echo "Expected demo values: symbol PAPER, supply 100000000000000, epoch 3600000000000 ns, sybil_resistant false."
+  echo "Expected demo values: symbol PAPER, initial_supply 100000000000000, epoch 3600000000000 ns, sybil_resistant false."
+  echo "ft_total_supply is not frozen at the init amount. Mints and burns move it."
   exit 0
 fi
 

@@ -12,11 +12,11 @@ What you can run in this repo today. The demo deploy below is the one transactio
 
 | Command | Action | Result |
 | --- | --- | --- |
-| `cd contracts/paperhands && cargo test --lib --offline` | Run the settlement, penalty, dust, claim, and accounting tests. | 37 unit tests pass. No chain call. |
-| `cd contracts/paperhands && cargo test --test test_basics --offline -- --test-threads=1` | Run the sandbox: 950/25/25, a 25-account success, an empty epoch, and a 1-unit dust split. | 3 sandbox tests pass. Local sandbox only. |
+| `cd contracts/paperhands && cargo test --lib --locked --offline` | Run the settlement, penalty, dust, claim, and accounting tests. | 38 unit tests pass. No chain call. |
+| `cd contracts/paperhands && cargo test --test test_basics --locked -- --test-threads=1` | Run the sandbox: 950/25/25, a 25-account success, an empty epoch, and a 1-unit dust split. | 3 sandbox tests passed on 14 Nov 2026. Local sandbox only. Needs `cargo-near` on `PATH`. |
 | `cd simulator && npm test` | Run scenarios A, B, and C. | A ends at 1,004,000 PAPER. C ends at 995,800. B's published supply is `1000999.99999990` because 10 smallest units of bonus dust are burned. |
 | `scripts/demo-testnet.sh` | Print the Testnet plan. | Exits 0. Sends nothing. Refuses mainnet. |
-| `PAPERHANDS_CONTRACT_ID=diabloodevs.testnet scripts/verify-views.sh` | Read `ft_metadata`, supply, `get_economic_config`, faucet status. | Demo: symbol `PAPER`, supply `100000000000000`, epoch duration `3600000000000` (1 hour), `sybil_resistant: false`. |
+| `PAPERHANDS_CONTRACT_ID=diabloodevs.testnet scripts/verify-views.sh` | Read `ft_metadata`, `ft_total_supply`, `get_economic_config`, faucet status. | Demo: symbol `PAPER`, initial supply `100000000000000`, epoch duration `3600000000000` (1 hour), `sybil_resistant: false`. Live supply moves when the contract mints and burns. On 14 Nov 2026 it was `99446499999984`. |
 
 On-chain actions, once a demo deployment exists. The script does not create the account.
 
@@ -43,7 +43,7 @@ The app attaches 0.1 NEAR and the contract refunds the unused part. The commitme
 
 ```text
 contracts/paperhands/    Rust contract, unit tests, sandbox tests
-frontend/                Next.js app, eight routes
+frontend/                Next.js app
 simulator/               Integer scenarios A, B, and C
 scripts/                 build, dry-run demo, read-only views
 docs/                    rules, invariants, Sybil limits, deploy notes, visual audit
@@ -54,13 +54,32 @@ Pages: `/`, `/how-it-works`, `/commitment`, `/paperhands-index`, `/epoch/[id]`, 
 
 V3 adds SponsorHub, MissionHub, and Treasury beside the deployed Diamond Core. A sponsor campaign locks another 1,000 PAPER. It does not join the Diamond epoch. Demo campaigns last 1 hour. Production campaigns last 7 days. The early-exit 25 PAPER inside SponsorHub is a protocol reserve, not a burn. The demo contracts are `sponsor.diabloodevs.testnet`, `missions.diabloodevs.testnet`, and `treasury.diabloodevs.testnet`. They do not replace the Diamond Core wasm. See [docs/V3_DECISIONS.md](docs/V3_DECISIONS.md), [docs/V3_THREAT_MODEL.md](docs/V3_THREAT_MODEL.md), and [docs/V3_TESTNET_REPORT.md](docs/V3_TESTNET_REPORT.md).
 
+## Live and planned
+
+Implemented and deployed on Testnet, demo clock only:
+
+- Diamond Core at `diabloodevs.testnet` (NEP-141 PAPER plus the commitment methods).
+- SponsorHub at `sponsor.diabloodevs.testnet`.
+- MissionHub at `missions.diabloodevs.testnet`.
+- Treasury at `treasury.diabloodevs.testnet`.
+
+Not implemented as settlement: NEAR Intents, Chain Signatures, and a sentinel that holds a key. `policy/intents.mjs` cannot record a join. `policy/chain-signatures.mjs` cannot sign. `sentinel/sentinel.mjs` only prints a plan and does not broadcast.
+
+The home and economy pages show the live faucet and burn reserves from `get_protocol_balances`. The init split (1,000,000 supply, 700,000 faucet cap, 300,000 burn reserve) is the deployment parameter, not the current balance. On 14 Nov 2026 the live faucet reserve was 671,000 PAPER and the live burn reserve was 294,250 PAPER. Accounting difference was `0`.
+
+One account is not one person. The faucet is not Sybil-proof, and a participant cap is not proof of personhood.
+
+Each of the four accounts still has a Full Access key. That key can replace the wasm. There is no in-contract upgrade method, and the keys were not removed. Do not call this production-ready or permanently immutable.
+
 ## Status of this build
 
-Re-run on 11 Nov 2026: `cargo test --lib` (38), `cargo test --test test_basics` (3), `npm test` in `simulator` (5).
+Re-read on 14 Nov 2026, no write to the chain. Epoch 82 was in commitment. Epoch 23 is the finalized success: 25 accounts joined, one exited early, finalize minted 240 PAPER, retention 96%. `next_epoch_to_finalize` is 24, so later empty epochs have not been finalized. The Core code hash is `H5f6eermchQ1DsE4mqCVpQh9AwUd8zUgosrsEkEJuCkd`. This run did not build a new release wasm, so it does not repeat a byte-for-byte match against that hash.
 
-Deployed on Testnet as `diabloodevs.testnet`, demo init only. The code hash matches the local wasm. Epoch 23 finished on Testnet: 25 accounts joined, one exited early for 950 PAPER, finalize minted 240 PAPER, and the 24 survivors claimed principal and rewards. Accounting difference stayed `0`. The full-access key on the contract account is still there, so the wasm can still be replaced. Do not call this production-ready or permanently immutable.
+The full-access key on the contract account is still there, so the wasm can still be replaced.
 
-Reports: [docs/IMPLEMENTATION_STATUS.md](docs/IMPLEMENTATION_STATUS.md), [docs/TEST_REPORT.md](docs/TEST_REPORT.md), [docs/TESTNET_ACCOUNTS.md](docs/TESTNET_ACCOUNTS.md), [docs/TESTNET_E2E_REPORT.md](docs/TESTNET_E2E_REPORT.md), [docs/SECURITY_AUDIT.md](docs/SECURITY_AUDIT.md), [docs/SYBIL_LIMITATIONS.md](docs/SYBIL_LIMITATIONS.md).
+Reports from this audit: [docs/FULL_SYSTEM_AUDIT.md](docs/FULL_SYSTEM_AUDIT.md), [docs/CONTRACT_SECURITY_AUDIT.md](docs/CONTRACT_SECURITY_AUDIT.md), [docs/FRONTEND_CONTRACT_INTEGRATION.md](docs/FRONTEND_CONTRACT_INTEGRATION.md), [docs/NEAR_STANDARDS_COMPLIANCE.md](docs/NEAR_STANDARDS_COMPLIANCE.md), [docs/TEST_EXECUTION_REPORT.md](docs/TEST_EXECUTION_REPORT.md), [docs/MOCK_CLEANUP_REPORT.md](docs/MOCK_CLEANUP_REPORT.md), [docs/REMAINING_RISKS.md](docs/REMAINING_RISKS.md).
+
+Earlier reports: [docs/IMPLEMENTATION_STATUS.md](docs/IMPLEMENTATION_STATUS.md), [docs/TEST_REPORT.md](docs/TEST_REPORT.md), [docs/TESTNET_ACCOUNTS.md](docs/TESTNET_ACCOUNTS.md), [docs/TESTNET_E2E_REPORT.md](docs/TESTNET_E2E_REPORT.md), [docs/SECURITY_AUDIT.md](docs/SECURITY_AUDIT.md), [docs/SYBIL_LIMITATIONS.md](docs/SYBIL_LIMITATIONS.md).
 
 Pins: `near-sdk` `=5.30.1` and `near-contract-standards` `=5.30.1`. See [docs/DEPENDENCIES.md](docs/DEPENDENCIES.md).
 

@@ -155,6 +155,7 @@ export function HomeExperience() {
             <HeroStat label="Current streak" value={epoch ? String(epoch.current_streak) : "—"} />
           </dl>
           <p className="relative z-10 mt-4 px-4 text-center text-sm text-cream/75">{epoch ? deploymentBanner(epoch.deployment_kind, epoch.faucet_enabled) : error}</p>
+          <p className="relative z-10 mt-2 px-4 text-center text-sm text-cream/75">{provisionalLabel(currentDetail)}</p>
         </div>
       </section>
 
@@ -396,6 +397,14 @@ function sumBurns(books: ProtocolBalances | null) {
   } catch {
     return null;
   }
+}
+
+function provisionalLabel(detail: EpochDetail | null) {
+  if (!detail) return "Provisional result unread until the current epoch loads.";
+  if (detail.finalized) return "This epoch is already finalized. The retention above is the settled result.";
+  if (detail.projected_success === true) return "Provisional: on track. This is not a finalized result.";
+  if (detail.projected_success === false) return "Provisional: not on track. This is not a finalized result.";
+  return "Provisional result is not available until the entry window closes.";
 }
 
 function retentionLabel(config: Economics | null) {
