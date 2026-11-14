@@ -15,6 +15,7 @@ import { durationLabel } from "@/lib/format";
 import { formatPaper } from "paperhands-simulator";
 import { useWallet } from "@/lib/wallet";
 import { BelowHero } from "@/components/BelowHero";
+import { MorphingSquare } from "@/components/ui/morphing-square";
 
 type Economics = {
   initial_supply: string;
@@ -106,7 +107,7 @@ export function HomeExperience() {
                 </>
               ) : (
                 <button disabled={wallet.busy} onClick={() => void wallet.connect()} type="button">
-                  {wallet.busy ? "Connecting" : "Connect"}
+                  {wallet.busy ? <MorphingSquare className="h-4 w-4 bg-pink" message="Connecting" messagePlacement="right" /> : "Connect"}
                 </button>
               )}
             </nav>
@@ -146,6 +147,7 @@ export function HomeExperience() {
         earlyReturn={earlyReturn}
         entry={durationLabel(epoch?.entry_window_ns)}
         error={error}
+        loading={epoch == null && error == null}
         faucet={amount(books?.faucet_reserve)}
         hold={durationLabel(epoch?.epoch_duration_ns)}
         listings={listings}

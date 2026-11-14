@@ -25,6 +25,8 @@
 }
 
 @theme {
+  --color-background: #fffdf7;
+  --color-foreground: #461e10;
   --color-cream: #fffdf7;
   --color-forest: #09543d;
   --color-forest-deep: #04261c;
@@ -499,6 +501,17 @@ details.faq p {
 .home-block {
   max-width: 1100px;
   margin: 7.5rem auto 0;
+}
+
+.path-board {
+  max-width: 1100px;
+  margin: 6rem auto 0;
+}
+
+.path-board .marker {
+  background-position: 0 58%;
+  background-size: 100% 86%;
+  padding: 0.04em 0.14em 0.08em;
 }
 
 .mission {

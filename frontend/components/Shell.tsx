@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { CONTRACT_ID, MAINNET_REFUSED, MISSION_CONTRACT_ID, NETWORK, SPONSOR_CONTRACT_ID, TREASURY_CONTRACT_ID } from "@/lib/config";
 import { WalletProvider, useWallet } from "@/lib/wallet";
+import { MorphingSquare } from "@/components/ui/morphing-square";
 
 const PRIMARY = [
   ["/get-started", "Get started"],
@@ -69,7 +70,7 @@ function Bar() {
               </>
             ) : (
               <button className="btn btn-pink px-3 text-xs" disabled={wallet.busy} onClick={() => void wallet.connect()} type="button">
-                {wallet.busy ? "Connecting…" : "Connect Testnet"}
+                {wallet.busy ? <MorphingSquare className="h-4 w-4 bg-ink" message="Connecting" messagePlacement="right" /> : "Connect Testnet"}
               </button>
             )}
             <button
