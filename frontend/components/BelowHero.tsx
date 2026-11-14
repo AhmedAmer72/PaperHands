@@ -4,10 +4,21 @@ import Link from "next/link";
 import { useRef, useState, type ReactNode } from "react";
 import { motion, useReducedMotion, useScroll, useTransform } from "motion/react";
 import type { EpochDetail } from "@/lib/chain";
+import { ColorfulBentoGrid, type BentoTile, type BentoTone } from "@/components/ui/colorful-bento-grid";
 import HowItWorks from "@/components/ui/how-it-works";
 import { MorphingSquare } from "@/components/ui/morphing-square";
 
 const POP = [0.17, 0.67, 0.3, 1.1] as const;
+
+const BOARD_ART = [
+  { src: "/assets/paperhands/illustrations/bill.png", width: 765, height: 1024 },
+  { src: "/assets/paperhands/illustrations/diamond.png", width: 775, height: 1024 },
+  { src: "/assets/paperhands/illustrations/lock.png", width: 747, height: 1024 },
+  { src: "/assets/paperhands/illustrations/handshake.png", width: 1024, height: 1024 },
+  { src: "/assets/paperhands/illustrations/bump.png", width: 1024, height: 1024 },
+] as const;
+
+const BOARD_TONE: readonly BentoTone[] = ["forest", "cyan", "pink", "violet", "lime"];
 
 const RULES = [
   {
@@ -102,32 +113,10 @@ export function BelowHero({
       </section>
 
       <section className="home-block" id="epochs">
+        {error ? <p className="mb-4 text-sm text-orange">{error}</p> : null}
         <Reveal>
-          <h2 className="display-md max-w-3xl">Finalized epochs</h2>
+          <EpochBoard listings={listings} loading={loading} />
         </Reveal>
-        {error ? <p className="mt-4 text-sm text-orange">{error}</p> : null}
-        {loading ? (
-          <div className="mt-8">
-            <MorphingSquare message="Reading the contract…" />
-          </div>
-        ) : listings.length === 0 ? (
-          <p className="mt-6 max-w-xl text-ink/70">No finalized epoch is on the contract yet.</p>
-        ) : (
-          <div className="epoch-stack">
-            {listings.map((item, index) => (
-              <ScrollCard index={index} key={item.epoch_id}>
-                <Link className="epoch-link" href={`/epoch/${item.epoch_id}`}>
-                  <p className="font-display text-4xl leading-none">Epoch {item.epoch_id}</p>
-                  <p className="mt-4 text-sm text-ink/70">
-                    {item.retention_bps == null ? "Retention pending" : `${(item.retention_bps / 100).toFixed(2)}% stayed`}
-                  </p>
-                  <p className="mt-1 text-sm text-ink/70">{item.active_participants} still in</p>
-                  <p className="mt-1 text-sm text-ink/70">{item.early_exits} left early</p>
-                </Link>
-              </ScrollCard>
-            ))}
-          </div>
-        )}
         <div className="reserve-rail" aria-label="Reserves">
           <Reserve tone="forest" label="Supply" value={supply} />
           <Reserve tone="pink" label="Faucet reserve" value={faucet} />
@@ -245,6 +234,37 @@ function MissionCard({
   );
 }
 
+function EpochBoard({ listings, loading }: { listings: EpochDetail[]; loading: boolean }) {
+  const shown = listings.slice(0, 5);
+  const exits = shown.reduce((sum, item) => sum + item.early_exits, 0);
+  const tiles: BentoTile[] = shown.map((item, index) => ({
+    href: `/epoch/${item.epoch_id}`,
+    eyebrow: item.retention_bps == null ? "Retention pending" : `${(item.retention_bps / 100).toFixed(2)}% stayed`,
+    title: `Epoch ${item.epoch_id}`,
+    lines: [`${item.active_participants} still in`, `${item.early_exits} left early`],
+    image: BOARD_ART[index % BOARD_ART.length],
+    tone: BOARD_TONE[index % BOARD_TONE.length],
+    wide: index === 0,
+  }));
+  const stats = shown.length === 0 ? [] : [`${shown.length} ${shown.length === 1 ? "epoch" : "epochs"}`, `${exits.toLocaleString("en-US")} left early`];
+  return (
+    <ColorfulBentoGrid
+      footer={listings.length > 0 ? { href: "/paperhands-index", label: listings.length > shown.length ? "See the rest on the index" : "Open the index" } : null}
+      lede="Each closed epoch keeps who stayed and who left early."
+      stats={stats}
+      tiles={tiles}
+    >
+      {loading ? (
+        <div className="px-1 pb-4">
+          <MorphingSquare message="Reading the contract…" />
+        </div>
+      ) : (
+        <p className="max-w-xl px-1 pb-4 text-ink/70">No finalized epoch is on the contract yet.</p>
+      )}
+    </ColorfulBentoGrid>
+  );
+}
+
 function Reveal({ children, className, delay = 0 }: { children: ReactNode; className?: string; delay?: number }) {
   const reduce = useReducedMotion();
   if (reduce) return <div className={className}>{children}</div>;
@@ -256,20 +276,6 @@ function Reveal({ children, className, delay = 0 }: { children: ReactNode; class
       viewport={{ once: true, amount: 0.35 }}
       transition={{ duration: 0.55, delay, ease: POP }}
     >
-      {children}
-    </motion.div>
-  );
-}
-
-function ScrollCard({ index, children }: { index: number; children: ReactNode }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const reduce = useReducedMotion();
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
-  const tilt = index % 3 === 1 ? [-2.4, 0.4, 1.6] : index % 3 === 2 ? [2.2, -0.3, -1.5] : [1.1, 0, -0.8];
-  const y = useTransform(scrollYProgress, [0, 0.4, 1], [72, 0, -28]);
-  const rotate = useTransform(scrollYProgress, [0, 0.4, 1], tilt);
-  return (
-    <motion.div ref={ref} className={`epoch-card shift-${index % 3}`} style={reduce ? undefined : { y, rotate }}>
       {children}
     </motion.div>
   );
