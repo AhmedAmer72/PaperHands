@@ -3,18 +3,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { CONTRACT_ID, MAINNET_REFUSED, MISSION_CONTRACT_ID, NETWORK, SPONSOR_CONTRACT_ID, TREASURY_CONTRACT_ID } from "@/lib/config";
-import { WalletProvider, useWallet } from "@/lib/wallet";
+import { SiteFooter } from "@/components/SiteFooter";
+import { Wordmark } from "@/components/Wordmark";
 import { MorphingSquare } from "@/components/ui/morphing-square";
-
-const PRIMARY = [
-  ["/get-started", "Get started"],
-  ["/commitment", "Commit"],
-  ["/paperhands-index", "Epochs"],
-  ["/sponsors", "Sponsors"],
-  ["/missions", "Missions"],
-  ["/treasury", "Treasury"],
-];
+import { CONTRACT_ID, MAINNET_REFUSED, MISSION_CONTRACT_ID, NETWORK, SPONSOR_CONTRACT_ID, TREASURY_CONTRACT_ID } from "@/lib/config";
+import { PRIMARY_LINKS } from "@/lib/nav";
+import { WalletProvider, useWallet } from "@/lib/wallet";
 
 function current(path: string, href: string) {
   if (href === "/") return path === "/";
@@ -49,12 +43,11 @@ function Bar() {
       <a className="skip" href="#main">Skip to content</a>
       <header className="sticky top-0 z-30 px-3 pt-3 md:px-5">
         <div className="mx-auto flex max-w-[1200px] items-center gap-2 rounded-[2rem] bg-forest px-3 py-2 text-cream shadow-[0_12px_40px_#09543d33] md:px-4">
-          <Link aria-label="PaperHands home" className="flex min-h-11 items-center gap-2 rounded-full pr-2" href="/" onClick={() => setOpen(false)}>
-            <span aria-hidden className="grid h-9 w-9 place-items-center rounded-full bg-pink text-xs font-semibold text-ink">PH</span>
-            <span className="font-display text-xl tracking-wide">PAPERHANDS</span>
+          <Link aria-label="PaperHands home" className="flex min-h-11 shrink-0 items-center rounded-full" href="/" onClick={() => setOpen(false)}>
+            <Wordmark className="h-8 w-auto text-cream" />
           </Link>
           <nav aria-label="Primary" className="ml-1 hidden items-center gap-1 text-sm lg:flex">
-            {PRIMARY.map(([href, label]) => (
+            {PRIMARY_LINKS.map(([href, label]) => (
               <NavLink href={href} key={href} label={label} path={path} />
             ))}
           </nav>
@@ -86,7 +79,7 @@ function Bar() {
         </div>
         {open ? (
           <nav aria-label="Site" className="mx-auto mt-2 grid max-w-[1200px] gap-1 rounded-[1.5rem] bg-forest p-4 text-cream lg:hidden" id="site-menu">
-            {PRIMARY.map(([href, label]) => (
+            {PRIMARY_LINKS.map(([href, label]) => (
               <NavLink href={href} key={href} label={label} onNavigate={() => setOpen(false)} path={path} />
             ))}
             {wallet.accountId ? (
@@ -130,6 +123,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
   return (
     <WalletProvider>
       <Frame>{children}</Frame>
+      <SiteFooter />
     </WalletProvider>
   );
 }

@@ -10,10 +10,10 @@ import {
   view,
   viewEpochs,
 } from "@/lib/chain";
-import { CONTRACT_ID } from "@/lib/config";
 import { durationLabel, paper } from "@/lib/format";
 import { useWallet } from "@/lib/wallet";
 import { BelowHero } from "@/components/BelowHero";
+import { Wordmark } from "@/components/Wordmark";
 import { MorphingSquare } from "@/components/ui/morphing-square";
 
 type Economics = {
@@ -82,7 +82,7 @@ export function HomeExperience() {
     : "950 PAPER";
 
   return (
-    <div className="px-3 pb-16 md:px-5">
+    <div className="px-3 md:px-5">
       <section className="mx-auto w-full">
         <div className="hero-card">
           <header className="hero-nav">
@@ -93,8 +93,7 @@ export function HomeExperience() {
               <Link href="/sponsors">Sponsors</Link>
             </nav>
             <Link aria-label="PaperHands home" className="hero-mark" href="/">
-              <span aria-hidden className="hero-dots"><i /><i /><i /><i /><i /></span>
-              PAPERHANDS
+              <Wordmark className="h-12 w-auto text-cream sm:h-14" />
             </Link>
             <nav aria-label="More" className="hero-nav-side hero-nav-right">
               <Link href="/missions">Missions</Link>
@@ -152,17 +151,6 @@ export function HomeExperience() {
         listings={listings}
         supply={paper(books?.total_supply)}
       />
-
-      <footer className="mx-auto mt-20 max-w-[1100px]">
-        <div className="rounded-[2rem] bg-pink p-6">
-          <p className="font-display text-4xl">Join this epoch.</p>
-          <Link className="btn btn-cream mt-4" href="/commitment">Join</Link>
-        </div>
-        <ul className="mt-8 flex flex-wrap gap-x-5 gap-y-2 text-sm font-semibold">
-          <li><a href="https://near.org">NEAR Protocol</a></li>
-          {CONTRACT_ID ? <li><a href={`https://testnet.nearblocks.io/address/${CONTRACT_ID}`}>Contract</a></li> : null}
-        </ul>
-      </footer>
     </div>
   );
 }
