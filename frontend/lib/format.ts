@@ -1,12 +1,32 @@
-import { formatPaper } from "paperhands-simulator";
+const CENT = 1_000_000n;
 
 export function paper(units: string | number | null | undefined): string {
   if (units === null || units === undefined || units === "") return "—";
   try {
-    return `${formatPaper(BigInt(units))} PAPER`;
+    return `${formatPaperAmount(BigInt(units))} PAPER`;
   } catch {
     return String(units);
   }
+}
+
+function formatPaperAmount(units: bigint): string {
+  const sign = units < 0n ? "-" : "";
+  const abs = units < 0n ? -units : units;
+  const cents = (abs + CENT / 2n) / CENT;
+  const whole = cents / 100n;
+  const frac = cents % 100n;
+  const grouped = whole.toLocaleString("en-US");
+  if (frac === 0n) return `${sign}${grouped}`;
+  const digits = frac.toString().padStart(2, "0").replace(/0$/, "");
+  return `${sign}${grouped}.${digits}`;
+}
+
+export function percentFromBps(bps: number | null | undefined): string {
+  if (bps == null || !Number.isFinite(bps)) return "—";
+  const whole = Math.trunc(bps / 100);
+  const frac = Math.abs(Math.trunc(bps) % 100);
+  if (frac === 0) return `${whole}%`;
+  return `${whole}.${String(frac).padStart(2, "0").replace(/0$/, "")}%`;
 }
 
 export function durationLabel(ns: string | undefined): string {

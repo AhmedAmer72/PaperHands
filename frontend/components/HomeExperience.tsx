@@ -11,8 +11,7 @@ import {
   viewEpochs,
 } from "@/lib/chain";
 import { CONTRACT_ID } from "@/lib/config";
-import { durationLabel } from "@/lib/format";
-import { formatPaper } from "paperhands-simulator";
+import { durationLabel, paper } from "@/lib/format";
 import { useWallet } from "@/lib/wallet";
 import { BelowHero } from "@/components/BelowHero";
 import { MorphingSquare } from "@/components/ui/morphing-square";
@@ -142,16 +141,16 @@ export function HomeExperience() {
       </section>
 
       <BelowHero
-        burn={amount(books?.burn_reserve)}
+        burn={paper(books?.burn_reserve)}
         clockReady={epoch != null}
         earlyReturn={earlyReturn}
         entry={durationLabel(epoch?.entry_window_ns)}
         error={error}
         loading={epoch == null && error == null}
-        faucet={amount(books?.faucet_reserve)}
+        faucet={paper(books?.faucet_reserve)}
         hold={durationLabel(epoch?.epoch_duration_ns)}
         listings={listings}
-        supply={amount(books?.total_supply)}
+        supply={paper(books?.total_supply)}
       />
 
       <footer className="mx-auto mt-20 max-w-[1100px]">
@@ -172,14 +171,3 @@ function wait(seconds: number): CSSProperties {
   return { "--delay": `${seconds}s` } as CSSProperties;
 }
 
-function amount(units: string | null | undefined): string {
-  if (!units) return "—";
-  try {
-    const [whole, frac = ""] = formatPaper(BigInt(units)).split(".");
-    const grouped = BigInt(whole).toLocaleString("en-US");
-    const trimmed = frac.replace(/0+$/, "");
-    return trimmed ? `${grouped}.${trimmed} PAPER` : `${grouped} PAPER`;
-  } catch {
-    return "—";
-  }
-}

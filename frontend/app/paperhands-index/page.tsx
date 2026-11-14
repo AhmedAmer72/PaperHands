@@ -4,13 +4,14 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { PageHead, Stat } from "@/components/PageChrome";
 import { type CurrentEpoch, type EpochDetail, type ProtocolBalances, contractReady, view, viewEpochs } from "@/lib/chain";
-import { paper } from "@/lib/format";
+import { paper, percentFromBps } from "@/lib/format";
 
 export default function IndexPage() {
   const [error, setError] = useState<string | null>(contractReady());
   const [epoch, setEpoch] = useState<CurrentEpoch | null>(null);
   const [rows, setRows] = useState<EpochDetail[]>([]);
   const [balances, setBalances] = useState<ProtocolBalances | null>(null);
+  const [picked, setPicked] = useState<string | null>(null);
 
   useEffect(() => {
     if (contractReady()) return;
@@ -29,56 +30,77 @@ export default function IndexPage() {
     })();
   }, []);
 
-  const settled = rows.filter((row) => row.finalized);
-  const widest = settled.reduce((max, row) => Math.max(max, row.retention_bps ?? 0), 1);
-  const exits = settled.reduce((sum, row) => sum + row.early_exits, 0);
+  const selectedId = picked ?? rows.find((row) => row.finalized)?.epoch_id ?? rows[0]?.epoch_id ?? "";
+  const selected = rows.find((row) => row.epoch_id === selectedId) ?? null;
 
   return (
     <section className="space-y-8">
       <PageHead
-        eyebrow="Paperhands index"
-        lede="Retention, cohorts, exits, locked PAPER, burns, bonuses, and streaks. These numbers come from contract views. This page does not decide them."
-        title="What the epochs actually did"
+        eyebrow="Epochs"
+        lede="Pick an epoch. Retention, who stayed, and who left come from the contract."
+        title="What the epochs did"
       />
       {error ? <p className="rounded-2xl bg-orange/10 px-4 py-3 text-sm text-orange">{error}</p> : null}
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        <Stat label="Current streak" note={`Longest ${epoch?.longest_streak ?? "—"}`} value={epoch ? String(epoch.current_streak) : "—"} />
-        <Stat label="Locked PAPER" value={paper(balances?.locked_principal)} />
+      {epoch ? <p className="text-sm font-semibold text-forest">Streak {epoch.current_streak}. Longest {epoch.longest_streak}.</p> : null}
+      <div className="grid gap-3 sm:grid-cols-3">
         <Stat label="Supply" value={paper(balances?.total_supply)} />
-        <Stat label="Exit burn" note={`Reserve ${paper(balances?.total_reserve_burned)} · dust ${paper(balances?.total_dust_burned)}`} value={paper(balances?.total_exit_burned)} />
-        <Stat label="Unclaimed bonuses" value={paper(balances?.unclaimed_exit_bonuses)} />
-        <Stat label="Graded mint" note={settled.length ? `${exits} early exits in the finalized rows below` : "No finalized row loaded"} value={paper(balances?.total_graded_minted)} />
+        <Stat label="Locked" value={paper(balances?.locked_principal)} />
+        <Stat label="Exit burn" value={paper(balances?.total_exit_burned)} />
       </div>
+      {balances ? (
+        <p className="text-sm text-ink/65">
+          Minted {paper(balances.total_graded_minted)}. Reserve {paper(balances.total_reserve_burned)}.
+        </p>
+      ) : null}
 
       <div className="card p-6">
-        <h2 className="font-display text-4xl">Retention</h2>
-        <p className="mt-2 text-sm text-ink/65">Each bar is that epoch&apos;s retention basis points, scaled to the widest finalized epoch on this page. Open epochs are listed underneath and are not drawn as a success.</p>
-        {settled.length === 0 ? <p className="mt-4 text-ink/60">{epoch ? "No finalized epoch has been read." : "Reading every epoch from the contract."}</p> : null}
-        <ul className="mt-5 space-y-3">
-          {settled.map((row) => (
-            <li className="grid items-center gap-3 text-sm sm:grid-cols-[5rem_1fr_4.5rem]" key={row.epoch_id}>
-              <Link className="font-semibold" href={`/epoch/${row.epoch_id}`}>#{row.epoch_id}</Link>
-              <span className="h-3 rounded-full bg-cream">
-                <span className="block h-3 rounded-full bg-forest" style={{ width: `${((row.retention_bps ?? 0) / widest) * 100}%` }} />
-              </span>
-              <span>{row.retention_bps != null ? `${(row.retention_bps / 100).toFixed(1)}%` : "—"}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
+        <label className="grid gap-2 text-sm font-semibold" htmlFor="epoch-picker">
+          Epoch
+          <select
+            className="control text-base"
+            disabled={rows.length === 0}
+            id="epoch-picker"
+            value={selectedId}
+            onChange={(event) => setPicked(event.target.value)}
+          >
+            {rows.length === 0 ? <option value="">{epoch ? "No epoch has been read" : "Reading epochs"}</option> : null}
+            {rows.map((row) => (
+              <option key={row.epoch_id} value={row.epoch_id}>
+                {epochOption(row)}
+              </option>
+            ))}
+          </select>
+        </label>
 
-      <div className="grid gap-3">
-        {rows.map((row) => (
-          <Link className="card grid gap-3 p-5 sm:grid-cols-[6rem_1fr_auto] sm:items-center" href={`/epoch/${row.epoch_id}`} key={row.epoch_id}>
-            <p className="font-display text-4xl">#{row.epoch_id}</p>
-            <div className="text-sm text-ink/75">
-              <p>{row.finalized ? (row.success ? "Finalized success" : "Finalized failure") : row.phase}</p>
-              <p className="mt-1">Original {row.original_participants ?? "open"} · active {row.active_participants} · exits {row.early_exits}</p>
-            </div>
-            <p className="text-sm font-semibold">{row.retention_bps != null ? `${(row.retention_bps / 100).toFixed(2)}% kept` : "Not settled"}</p>
-          </Link>
-        ))}
+        {selected ? (
+          <div aria-live="polite" className="mt-6">
+            <p className="text-sm font-semibold text-forest">{epochStatus(selected)}</p>
+            <p className="mt-2 font-display text-6xl leading-none">{selected.retention_bps != null ? percentFromBps(selected.retention_bps) : "Open"}</p>
+            <p className="mt-3 text-sm text-ink/70">
+              {selected.active_participants} still in · {selected.early_exits} left early
+              {selected.original_participants != null ? ` · ${selected.original_participants} started` : ""}
+            </p>
+            <Link className="btn btn-pink mt-5" href={`/epoch/${selected.epoch_id}`}>Open epoch {selected.epoch_id}</Link>
+          </div>
+        ) : (
+          <p className="mt-4 text-sm text-ink/60">{epoch ? "No epoch has been read." : "Reading every epoch from the contract."}</p>
+        )}
       </div>
     </section>
   );
+}
+
+function epochOption(row: EpochDetail): string {
+  if (row.retention_bps != null) return `Epoch ${row.epoch_id} · ${percentFromBps(row.retention_bps)} stayed`;
+  return `Epoch ${row.epoch_id} · ${prettyPhase(row.phase)}`;
+}
+
+function epochStatus(row: EpochDetail): string {
+  if (!row.finalized) return prettyPhase(row.phase);
+  return row.success ? "Finalized success" : "Finalized failure";
+}
+
+function prettyPhase(phase: string): string {
+  if (!phase) return "Open";
+  return phase.charAt(0).toUpperCase() + phase.slice(1);
 }
