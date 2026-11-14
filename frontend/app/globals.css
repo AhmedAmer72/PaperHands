@@ -306,10 +306,36 @@ h2,
 }
 
 .hero-copy .hero-title {
-  font-size: clamp(1.4rem, 6.6vw, 7.2rem);
-  line-height: 0.88;
-  letter-spacing: -0.045em;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+  gap: clamp(0.35rem, 0.7vw, 0.65rem);
+  line-height: 0.78;
+  letter-spacing: -0.03em;
+  text-wrap: wrap;
+  white-space: normal;
+}
+
+.hero-line {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  line-height: 0.78;
+}
+
+.hero-line > span {
+  display: block;
+  width: max-content;
+  line-height: 0.78;
   white-space: nowrap;
+}
+
+.hero-line-mark {
+  box-sizing: border-box;
+  background: #ffa9e9;
+  color: #461e10;
+  padding: 1.5% 1.5% 1.9%;
 }
 
 section {
