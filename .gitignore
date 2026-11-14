@@ -1,5 +1,6 @@
 .agents/
 skills-lock.json
+.cursor/skills/impeccable/scripts/bin/
 .env
 **/.env
 !**/.env.example

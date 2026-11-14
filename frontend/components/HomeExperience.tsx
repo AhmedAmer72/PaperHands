@@ -11,8 +11,10 @@ import {
   viewEpochs,
 } from "@/lib/chain";
 import { CONTRACT_ID } from "@/lib/config";
-import { durationLabel, paper } from "@/lib/format";
+import { durationLabel } from "@/lib/format";
+import { formatPaper } from "paperhands-simulator";
 import { useWallet } from "@/lib/wallet";
+import { BelowHero } from "@/components/BelowHero";
 
 type Economics = {
   initial_supply: string;
@@ -29,7 +31,6 @@ export function HomeExperience() {
   const [epoch, setEpoch] = useState<CurrentEpoch | null>(null);
   const [books, setBooks] = useState<ProtocolBalances | null>(null);
   const [history, setHistory] = useState<EpochDetail[]>([]);
-  const [currentDetail, setCurrentDetail] = useState<EpochDetail | null>(null);
   const [economics, setEconomics] = useState<Economics | null>(null);
   const [error, setError] = useState<string | null>(contractReady());
 
@@ -65,7 +66,6 @@ export function HomeExperience() {
         setError(null);
         const details = await viewEpochs(0, Number(current.epoch_id));
         if (cancelled) return;
-        setCurrentDetail(details.find((item) => item.epoch_id === current.epoch_id) ?? null);
         setHistory(details.filter((item) => item.finalized));
       } catch (caught) {
         if (!cancelled) setError(caught instanceof Error ? caught.message : String(caught));
@@ -76,7 +76,10 @@ export function HomeExperience() {
     };
   }, []);
 
-  const last = history.at(-1) ?? null;
+  const listings = [...history].reverse().slice(0, 9);
+  const earlyReturn = economics
+    ? `${(1000 * (10000 - economics.early_exit_penalty_bps) / 10000).toLocaleString()} PAPER`
+    : "950 PAPER";
 
   return (
     <div className="px-3 pb-16 md:px-5">
@@ -84,6 +87,7 @@ export function HomeExperience() {
         <div className="hero-card">
           <header className="hero-nav">
             <nav aria-label="Primary" className="hero-nav-side hero-nav-left">
+              <Link href="/get-started">Get started</Link>
               <Link href="/commitment">Commit</Link>
               <Link href="/paperhands-index">Epochs</Link>
               <Link href="/sponsors">Sponsors</Link>
@@ -136,57 +140,20 @@ export function HomeExperience() {
         </div>
       </section>
 
-      <section className="mx-auto mt-20 max-w-[1100px]" id="community">
-        <div className="text-center" data-reveal="soft">
-          <div className="mx-auto w-fit" data-reveal="hand">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img alt="" className="h-44 w-auto" height={847} src="/assets/paperhands/illustrations/handshake.png" width={894} />
-          </div>
-          <p className="eyebrow mt-2">Live</p>
-          <h2 className="display-md mt-3 text-center">This epoch</h2>
-          {error ? <p className="mt-3 text-sm text-orange">{error}</p> : null}
-        </div>
-        <div className="mt-8 grid gap-4 md:grid-cols-3">
-          <Metric delay={0} label="Original participants" value={last?.original_participants?.toString() ?? "not finalized"} note="Frozen when the entry window closed" />
-          <Metric delay={0.08} label="Active participants" value={currentDetail ? String(currentDetail.active_participants) : "—"} note="Accounts still committed in the current epoch" />
-          <Metric delay={0.16} label="Retention rate" value={last?.retention_bps != null ? `${(last.retention_bps / 100).toFixed(2)}%` : "not settled"} note="Last finalized epoch" />
-          <Metric delay={0.24} label="Locked PAPER" value={paper(books?.locked_principal)} note="Principal sitting in the contract" />
-          <Metric delay={0.32} label="Current streak" value={epoch ? String(epoch.current_streak) : "—"} note="Resets when an epoch fails" />
-          <Metric delay={0.4} label="Longest streak" value={epoch ? String(epoch.longest_streak) : "—"} note="Highest run stored on the contract" />
-        </div>
-      </section>
-
-      <section className="mx-auto mt-24 max-w-[1100px]" id="reserves">
-        <p className="eyebrow">Reserves</p>
-        <h2 className="display-md mt-3">Supply on this contract</h2>
-        <div className="mt-8 grid gap-4 md:grid-cols-3">
-          <article className="rounded-[2rem] bg-forest p-6 text-cream" data-reveal>
-            <p className="text-sm">Supply</p>
-            <p className="mt-3 font-display text-4xl">{books ? paper(books.total_supply) : "—"}</p>
-          </article>
-          <article className="rounded-[2rem] bg-pink p-6 text-ink" data-reveal style={wait(0.1)}>
-            <p className="text-sm">Faucet reserve</p>
-            <p className="mt-3 font-display text-4xl">{paper(books?.faucet_reserve)}</p>
-          </article>
-          <article className="rounded-[2rem] bg-charcoal p-6 text-cream" data-reveal style={wait(0.2)}>
-            <p className="text-sm">Burn reserve</p>
-            <p className="mt-3 font-display text-4xl">{paper(books?.burn_reserve)}</p>
-          </article>
-        </div>
-        <dl className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <Rule term="Commitment" value="1,000 PAPER" />
-          <Rule term="Epoch length" value={durationLabel(epoch?.epoch_duration_ns)} />
-          <Rule term="Early exit penalty" value={economics ? `${Number(economics.early_exit_penalty_bps) / 100}%` : "—"} />
-          <Rule term="Mint cap" value={economics ? paper(economics.max_mint_per_epoch) : "—"} />
-        </dl>
-        <div className="mt-6 flex flex-wrap gap-3">
-          <Link className="btn btn-green" href="/commitment">Join</Link>
-          <Link className="btn btn-pink" href="/paperhands-index">Open epochs</Link>
-        </div>
-      </section>
+      <BelowHero
+        burn={amount(books?.burn_reserve)}
+        clockReady={epoch != null}
+        earlyReturn={earlyReturn}
+        entry={durationLabel(epoch?.entry_window_ns)}
+        error={error}
+        faucet={amount(books?.faucet_reserve)}
+        hold={durationLabel(epoch?.epoch_duration_ns)}
+        listings={listings}
+        supply={amount(books?.total_supply)}
+      />
 
       <footer className="mx-auto mt-20 max-w-[1100px]">
-        <div className="rounded-[2rem] bg-pink p-6" data-reveal>
+        <div className="rounded-[2rem] bg-pink p-6">
           <p className="font-display text-4xl">Join this epoch.</p>
           <Link className="btn btn-cream mt-4" href="/commitment">Join</Link>
         </div>
@@ -203,21 +170,14 @@ function wait(seconds: number): CSSProperties {
   return { "--delay": `${seconds}s` } as CSSProperties;
 }
 
-function Metric({ label, value, note, delay = 0 }: { label: string; value: string; note: string; delay?: number }) {
-  return (
-    <article className="card p-5" data-reveal style={wait(delay)}>
-      <p className="text-sm text-ink/60">{label}</p>
-      <p className="mt-2 font-display text-4xl leading-none">{value}</p>
-      {note ? <p className="mt-2 text-xs text-ink/55">{note}</p> : null}
-    </article>
-  );
-}
-
-function Rule({ term, value, delay = 0 }: { term: string; value: string; delay?: number }) {
-  return (
-    <div className="rounded-2xl bg-white px-4 py-3 shadow-[0_0_60px_#00000012]" data-reveal style={wait(delay)}>
-      <dt className="text-xs uppercase tracking-wide text-ink/50">{term}</dt>
-      <dd className="mt-1 font-semibold">{value}</dd>
-    </div>
-  );
+function amount(units: string | null | undefined): string {
+  if (!units) return "—";
+  try {
+    const [whole, frac = ""] = formatPaper(BigInt(units)).split(".");
+    const grouped = BigInt(whole).toLocaleString("en-US");
+    const trimmed = frac.replace(/0+$/, "");
+    return trimmed ? `${grouped}.${trimmed} PAPER` : `${grouped} PAPER`;
+  } catch {
+    return "—";
+  }
 }

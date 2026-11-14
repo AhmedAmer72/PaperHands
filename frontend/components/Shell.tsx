@@ -7,6 +7,7 @@ import { CONTRACT_ID, MAINNET_REFUSED, MISSION_CONTRACT_ID, NETWORK, SPONSOR_CON
 import { WalletProvider, useWallet } from "@/lib/wallet";
 
 const PRIMARY = [
+  ["/get-started", "Get started"],
   ["/commitment", "Commit"],
   ["/paperhands-index", "Epochs"],
   ["/sponsors", "Sponsors"],
