@@ -5,8 +5,9 @@ import { useEffect, useState } from "react";
 import { PageHead, PhaseTrack } from "@/components/PageChrome";
 import { Report } from "@/components/Report";
 import { type CurrentEpoch, type UserEpochState, contractReady, view } from "@/lib/chain";
-import { DEPOSIT_JOIN, DEPOSIT_STORAGE } from "@/lib/config";
+import { CONTRACT_ID, DEPOSIT_JOIN, DEPOSIT_STORAGE } from "@/lib/config";
 import { durationLabel, paper, remaining } from "@/lib/format";
+import { CONTRACT_ACCOUNT_NOTE } from "@/lib/tx-error";
 import { type TxReport, useWallet } from "@/lib/wallet";
 
 export default function CommitmentPage() {
@@ -14,6 +15,7 @@ export default function CommitmentPage() {
   const [epoch, setEpoch] = useState<CurrentEpoch | null>(null);
   const [mine, setMine] = useState<UserEpochState | null>(null);
   const [balance, setBalance] = useState<string | null>(null);
+  const [faucetClaimed, setFaucetClaimed] = useState<boolean | null>(null);
   const [error, setError] = useState<string | null>(contractReady());
   const [confirmed, setConfirmed] = useState(false);
   const [report, setReport] = useState<TxReport | null>(null);
@@ -22,7 +24,14 @@ export default function CommitmentPage() {
     const current = await view<CurrentEpoch>("get_current_epoch");
     setEpoch(current);
     if (accountId) {
-      setMine(await view<UserEpochState>("get_user_epoch_state", { epoch_id: current.epoch_id, account_id: accountId }));
+      const [state, faucet] = await Promise.all([
+        view<UserEpochState>("get_user_epoch_state", { epoch_id: current.epoch_id, account_id: accountId }),
+        view<{ claimed: boolean | null }>("get_faucet_status", { account_id: accountId }),
+      ]);
+      setMine(state);
+      setFaucetClaimed(faucet.claimed);
+    } else {
+      setFaucetClaimed(null);
     }
   }
 
@@ -47,6 +56,37 @@ export default function CommitmentPage() {
       }
     }
   }
+
+  const ownsContract = wallet.accountId != null && wallet.accountId === CONTRACT_ID;
+  const selfMove = ownsContract ? CONTRACT_ACCOUNT_NOTE : null;
+  const joinReason = !wallet.accountId
+    ? "Connect a wallet first."
+    : selfMove
+      ?? (epoch?.phase !== "entry"
+        ? "Join is only open during the entry window."
+        : mine?.status
+          ? "This account already joined or left this epoch."
+          : null);
+  const cancelReason = selfMove
+    ?? (epoch?.phase !== "entry"
+      ? "Cancel is only open during the entry window."
+      : mine?.status !== "Active"
+        ? "There is no active lock to cancel."
+        : null);
+  const exitReason = selfMove
+    ?? (epoch?.phase !== "commitment"
+      ? "Early exit opens after the entry window closes, and only before the epoch ends."
+      : mine?.status !== "Active"
+        ? "There is no active lock to exit."
+        : null);
+  const faucetReason = !wallet.accountId
+    ? "Connect a wallet first."
+    : selfMove
+      ?? (!epoch?.faucet_enabled
+        ? "This deployment has the faucet off."
+        : faucetClaimed
+          ? "This account already claimed the faucet."
+          : null);
 
   const left = epoch
     ? epoch.phase === "entry"
@@ -80,7 +120,9 @@ export default function CommitmentPage() {
           <BandStat label="Entry window" value={durationLabel(epoch?.entry_window_ns)} />
         </dl>
         {epoch ? (
-          <Link className="btn btn-cream mt-6" href={`/epoch/${epoch.epoch_id}`}>Finalize and claim</Link>
+          <Link className="btn btn-cream mt-6" href={`/epoch/${epoch.next_epoch_to_finalize}`}>
+            {epoch.next_epoch_to_finalize === epoch.epoch_id ? "Finalize and claim" : `Finalize epoch ${epoch.next_epoch_to_finalize}`}
+          </Link>
         ) : null}
         {!wallet.accountId ? (
           <button className="btn btn-pink mt-6" onClick={() => void wallet.connect()} type="button">
@@ -96,42 +138,47 @@ export default function CommitmentPage() {
           <input checked={confirmed} className="mt-1" onChange={(event) => setConfirmed(event.target.checked)} type="checkbox" />
           <span>I understand the 1,000 PAPER lock, the 5% early-exit penalty, and that this screen shows the contract&apos;s real duration.</span>
         </label>
+        {selfMove ? <p className="mt-6 rounded-2xl bg-pink/40 px-4 py-3 text-sm text-ink">{selfMove}</p> : null}
         <div className="mt-6 grid gap-3">
           <Action
             copy="Pays for the account record the token standard requires."
-            disabled={!confirmed || wallet.busy}
+            disabled={!confirmed || wallet.busy || !wallet.accountId}
             label="01"
             onClick={() => void act(() => wallet.send("storage_deposit", { account_id: null, registration_only: null }, DEPOSIT_STORAGE))}
             title="Register storage"
           />
           <Action
-            copy={epoch?.faucet_enabled ? "One claim per account, from the faucet reserve." : "This deployment has the faucet off, so the button stays disabled."}
-            disabled={!confirmed || wallet.busy || !epoch?.faucet_enabled}
+            copy="One claim per account, from the faucet reserve."
+            disabled={!confirmed || wallet.busy || faucetReason != null}
             label="02"
             onClick={() => void act(() => wallet.send("claim_testnet_faucet", {}, DEPOSIT_STORAGE))}
+            reason={faucetReason}
             title="Claim faucet"
             warn
           />
           <Action
             copy="Transfers exactly 1,000 PAPER into the current epoch."
-            disabled={!confirmed || wallet.busy}
+            disabled={!confirmed || wallet.busy || joinReason != null}
             label="03"
             onClick={() => void act(() => wallet.send("join_epoch", {}, DEPOSIT_JOIN))}
             primary
+            reason={joinReason}
             title="Sign join"
           />
           <Action
             copy="Only during the entry window. Returns all 1,000 PAPER. You cannot rejoin this epoch."
-            disabled={!confirmed || wallet.busy}
+            disabled={!confirmed || wallet.busy || cancelReason != null}
             label="04"
             onClick={() => void act(() => wallet.send("cancel_during_entry", {}, DEPOSIT_JOIN))}
+            reason={cancelReason}
             title="Cancel entry"
           />
           <Action
             copy="After entry closes and before the epoch ends. Returns 950 PAPER."
-            disabled={!confirmed || wallet.busy}
+            disabled={!confirmed || wallet.busy || exitReason != null}
             label="05"
             onClick={() => void act(() => wallet.send("exit_early", {}, DEPOSIT_JOIN))}
+            reason={exitReason}
             title="Exit early"
             warn
           />
@@ -156,6 +203,7 @@ function Action({
   label,
   title,
   copy,
+  reason,
   onClick,
   disabled,
   primary,
@@ -164,6 +212,7 @@ function Action({
   label: string;
   title: string;
   copy: string;
+  reason?: string | null;
   onClick: () => void;
   disabled: boolean;
   primary?: boolean;
@@ -175,6 +224,7 @@ function Action({
       <div className="min-w-0 flex-1">
         <p className="font-display text-2xl">{title}</p>
         <p className="text-sm text-ink/65">{copy}</p>
+        {reason ? <p className="mt-2 text-sm font-semibold text-ink">{reason}</p> : null}
       </div>
       <button
         className={primary ? "btn btn-pink" : warn ? "btn border border-orange bg-white text-orange" : "btn btn-green"}
