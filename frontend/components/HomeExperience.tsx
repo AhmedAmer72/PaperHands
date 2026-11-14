@@ -83,7 +83,7 @@ export function HomeExperience() {
 
   return (
     <div className="px-3 md:px-5">
-      <section className="mx-auto w-full">
+      <section className="hero-frame mx-auto w-full">
         <div className="hero-card">
           <header className="hero-nav">
             <div className="hero-nav-side" />
