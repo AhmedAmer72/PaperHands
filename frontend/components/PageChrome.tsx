@@ -1,42 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-
-const PAGES = [
-  ["/commitment", "Commit"],
-  ["/paperhands-index", "Epochs"],
-  ["/sponsors", "Sponsors"],
-  ["/missions", "Missions"],
-  ["/treasury", "Treasury"],
-];
-
-export function PageNav() {
-  const path = usePathname();
-  return (
-    <nav className="flex gap-2 overflow-x-auto pb-1" aria-label="Product pages">
-      {PAGES.map(([href, label]) => {
-        const on = path === href;
-        return (
-          <Link
-            aria-current={on ? "page" : undefined}
-            className={`inline-flex min-h-11 shrink-0 items-center rounded-full px-3 text-sm font-semibold ${on ? "bg-forest text-cream" : "bg-white text-ink/70 shadow-[0_0_40px_#00000010]"}`}
-            href={href}
-            key={href}
-          >
-            {label}
-          </Link>
-        );
-      })}
-    </nav>
-  );
-}
 
 export function PageHead({ eyebrow, title, lede }: { eyebrow: string; title: string; lede: string }) {
   return (
     <header>
-      <PageNav />
-      <p className="eyebrow mt-8">{eyebrow}</p>
+      <p className="eyebrow">{eyebrow}</p>
       <h1 className="display-md mt-3 max-w-4xl">{title}</h1>
       <p className="mt-4 max-w-2xl text-lg leading-relaxed text-ink/75">{lede}</p>
     </header>

@@ -195,6 +195,7 @@ h2,
   font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
+  transition: color 0.2s ease, transform 160ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 .hero-nav a:hover,
@@ -291,7 +292,7 @@ section {
 }
 
 [data-reveal="hand"] img {
-  transform: scale(0);
+  transform: scale(0.92);
   transform-origin: center bottom;
   transition: transform 0.55s cubic-bezier(0.17, 0.67, 0.3, 1.1) var(--delay, 0s);
 }
@@ -344,7 +345,7 @@ section {
   text-align: center;
   white-space: nowrap;
   color: #461e10;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition: background-color 0.3s ease, color 0.3s ease, transform 160ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 .toggle a.on {
@@ -436,6 +437,14 @@ summary {
   transform: translateY(-1px);
 }
 
+.btn:active,
+.toggle a:active,
+.hero-nav a:active,
+.hero-nav button:active {
+  transform: scale(0.97);
+  transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
 .btn-pink {
   background: #ffa9e9;
   color: #461e10;
@@ -487,6 +496,166 @@ details.faq p {
   line-height: 1.55;
 }
 
+.calm-line {
+  max-width: 18ch;
+  margin: 4.5rem auto 0;
+  text-align: center;
+  font-family: Anton, "Arial Narrow", Impact, sans-serif;
+  font-size: clamp(2.4rem, 6vw, 4.4rem);
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+}
+
+.home-block {
+  max-width: 1100px;
+  margin: 6.5rem auto 0;
+}
+
+.mission-grid {
+  display: grid;
+  gap: 2.75rem;
+  margin-top: 2.75rem;
+}
+
+.mission-grid img {
+  height: 8.5rem;
+  width: auto;
+}
+
+.mission-grid h3,
+.path h3 {
+  margin-top: 1rem;
+  font-family: Anton, "Arial Narrow", Impact, sans-serif;
+  font-size: clamp(1.8rem, 3vw, 2.4rem);
+  font-weight: 400;
+  line-height: 1;
+}
+
+.mission-grid p,
+.path p {
+  max-width: 36ch;
+  margin-top: 0.7rem;
+  color: #461e10c2;
+  line-height: 1.5;
+}
+
+.path {
+  display: grid;
+  gap: 2.25rem;
+  margin-top: 2.75rem;
+}
+
+.path li {
+  display: grid;
+  grid-template-columns: 4.2rem 1fr;
+  gap: 0.8rem;
+  align-items: start;
+}
+
+.path li > span {
+  font-family: Anton, "Arial Narrow", Impact, sans-serif;
+  font-size: 2.4rem;
+  line-height: 0.9;
+  color: #09543d;
+}
+
+.catalog {
+  display: grid;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.listing {
+  display: block;
+  min-height: 10.5rem;
+  border-radius: 2rem;
+  background: #fff;
+  padding: 1.4rem 1.5rem;
+  box-shadow: 0 14px 36px #00000012;
+  transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.listing:hover {
+  transform: translateY(-2px);
+}
+
+.listing:active {
+  transform: scale(0.98);
+}
+
+.reserves {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.reserves div {
+  border-radius: 2rem;
+  padding: 1.3rem 1.5rem;
+}
+
+.reserves div:nth-child(1) {
+  background: #09543d;
+  color: #fffdf7;
+}
+
+.reserves div:nth-child(2) {
+  background: #ffa9e9;
+  color: #461e10;
+}
+
+.reserves div:nth-child(3) {
+  background: #1e1e1e;
+  color: #fffdf7;
+}
+
+.reserves dt {
+  font-size: 0.9rem;
+}
+
+.reserves dd {
+  margin-top: 0.45rem;
+  font-family: Anton, "Arial Narrow", Impact, sans-serif;
+  font-size: clamp(1.15rem, 2vw, 1.7rem);
+  line-height: 1.05;
+  overflow-wrap: anywhere;
+}
+
+.roles {
+  display: grid;
+  gap: 1.75rem;
+  margin-top: 2.5rem;
+}
+
+.roles a strong {
+  display: block;
+  font-family: Anton, "Arial Narrow", Impact, sans-serif;
+  font-size: clamp(2rem, 4vw, 2.8rem);
+  font-weight: 400;
+  line-height: 1;
+}
+
+.roles a span {
+  display: block;
+  max-width: 28ch;
+  margin-top: 0.55rem;
+  color: #461e10c2;
+  line-height: 1.45;
+}
+
+.roles a:hover strong {
+  color: #09543d;
+}
+
+@media (min-width: 800px) {
+  .mission-grid,
+  .catalog,
+  .reserves,
+  .roles {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
 @media (max-width: 900px) {
   .hero-card {
     display: flex;
@@ -504,6 +673,23 @@ details.faq p {
   .hero-nav-left,
   .hero-nav-right {
     justify-content: center;
+    flex-wrap: nowrap;
+    gap: 0 0.7rem;
+  }
+
+  .hero-nav a,
+  .hero-nav button {
+    font-size: 0.84rem;
+  }
+
+  .toggle {
+    flex-direction: column;
+    width: min(100%, 16.5rem);
+    align-items: stretch;
+  }
+
+  .hero-copy {
+    width: 100%;
   }
 
   .hero-hands {

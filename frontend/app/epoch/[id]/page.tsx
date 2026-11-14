@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
-import { PageNav, Stat } from "@/components/PageChrome";
+import { Stat } from "@/components/PageChrome";
 import { Report } from "@/components/Report";
 import { type EpochDetail, type UserEpochState, contractReady, view } from "@/lib/chain";
 import { DEPOSIT_JOIN } from "@/lib/config";
@@ -47,9 +47,8 @@ export default function EpochPage() {
 
   return (
     <section className="space-y-8">
-      <PageNav />
       <header>
-        <p className="eyebrow mt-8">Epoch record</p>
+        <p className="eyebrow">Epoch record</p>
         <h1 className="display-md mt-3">Epoch {id}</h1>
         <p className="mt-4 max-w-2xl text-lg text-ink/75">
           Settlement numbers below are the contract&apos;s view of this epoch. The buttons send finalize, claim, and sweep. The contract rejects a call that is not ready. Nothing here is marked successful before both success checks.
