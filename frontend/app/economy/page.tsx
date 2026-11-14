@@ -46,14 +46,14 @@ export default function EconomyPage() {
     <section className="space-y-8">
       <PageHead
         eyebrow="Token economy"
-        lede="Supply, reserves, and the accounting difference are contract views. The init supply and faucet cap are the amounts stored at deployment, not a second set of balances."
+        lede="Initial supply and the faucet cap are the amounts stored at deployment. The reserve cards are the live balances. This page does not rebuild a per-transaction mint and burn ledger."
         title="Books from the contract."
       />
       <p className="max-w-3xl text-sm text-ink/70">{epoch ? deploymentBanner(epoch.deployment_kind, epoch.faucet_enabled) : error}</p>
 
       <div className="grid gap-3 md:grid-cols-3">
-        <Stat label="Initial supply" note="Minted once at init. 8 decimals." tone="forest" value={paper(config ? String(config.initial_supply) : null)} />
-        <Stat label="Faucet reserve" note={config ? `Init cap ${paper(String(config.faucet_cap))}. Claims spend this reserve.` : "Unread until the contract answers."} tone="pink" value={paper(balances?.faucet_reserve)} />
+        <Stat label="Initial supply" note="Minted once at init. 8 decimals." tone="forest" value={config ? paper(String(config.initial_supply)) : "—"} />
+        <Stat label="Faucet reserve" note={config ? `Init cap ${paper(String(config.faucet_cap))}. Claims spend this reserve.` : "Live balance. Claims do not mint."} tone="pink" value={paper(balances?.faucet_reserve)} />
         <Stat label="Burn reserve" note="Live balance. Failed epochs burn from here." tone="ink" value={paper(balances?.burn_reserve)} />
       </div>
 
@@ -70,6 +70,9 @@ export default function EconomyPage() {
         </div>
       </div>
 
+      <p className="max-w-3xl text-sm text-ink/70">
+        Cumulative mint and burn counters below come from get_protocol_balances. Each mint and burn also emits a NEP-297 ft_mint or ft_burn log. This app does not scan historical logs, so a missing transaction row is not filled in.
+      </p>
       <div>
         <h2 className="font-display text-4xl">Contract books</h2>
         <div className="mt-4 grid gap-3 sm:grid-cols-2">

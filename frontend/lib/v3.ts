@@ -133,17 +133,21 @@ export function sponsorConfig(contractId: string) {
   return viewAt<SponsorConfig>(contractId, "get_protocol_config");
 }
 
-async function listPages<T extends Record<string, unknown>>(contractId: string, method: string, idKey: string): Promise<T[]> {
+async function listPages<T extends { campaign_id?: string; mission_id?: string; proposal_id?: string }>(
+  contractId: string,
+  method: string,
+  idKey: "campaign_id" | "mission_id" | "proposal_id",
+): Promise<T[]> {
   const rows: T[] = [];
-  let from = 1;
+  let from = "1";
   for (let page = 0; page < 40; page += 1) {
-    const chunk = await viewAt<T[]>(contractId, method, { from_index: String(from), limit: "50" });
-    if (chunk.length === 0) break;
-    rows.push(...chunk);
-    const lastRaw = chunk[chunk.length - 1]?.[idKey];
-    const last = typeof lastRaw === "string" || typeof lastRaw === "number" ? Number(lastRaw) : Number.NaN;
-    if (!Number.isFinite(last) || chunk.length < 50) break;
-    from = last + 1;
+    const batch = await viewAt<T[]>(contractId, method, { from_index: from, limit: "50" });
+    if (batch.length === 0) break;
+    rows.push(...batch);
+    if (batch.length < 50) break;
+    const last = batch[batch.length - 1]?.[idKey];
+    if (!last) break;
+    from = (BigInt(last) + 1n).toString();
   }
   return rows;
 }
