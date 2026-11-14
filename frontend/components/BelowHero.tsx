@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { motion, useReducedMotion, useScroll, useTransform } from "motion/react";
 import type { EpochDetail } from "@/lib/chain";
 
@@ -69,27 +69,7 @@ export function BelowHero({
         hold={hold}
       />
 
-      <section className="parcours" id="path">
-        <div className="parcours-sticky">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img alt="" className="parcours-hand" height={847} src="/assets/paperhands/illustrations/handshake.png" width={894} />
-          <h2 className="display-md">A path, not a pile of pages.</h2>
-          <Link className="btn btn-green mt-6" href="/get-started">Get started</Link>
-        </div>
-        <div className="parcours-steps">
-          {steps.map(([n, title, body], index) => (
-            <Reveal key={n} delay={index * 0.05}>
-              <article className="path-step">
-                <span>{n}</span>
-                <div>
-                  <h3>{title}</h3>
-                  <p>{body}</p>
-                </div>
-              </article>
-            </Reveal>
-          ))}
-        </div>
-      </section>
+      <Journey steps={steps} />
 
       <section className="home-block" id="epochs">
         <Reveal>
@@ -229,6 +209,114 @@ function MissionCard({
       <img alt="" height={1024} src={card.src} width={card.width} />
     </motion.article>
   );
+}
+
+function Journey({ steps }: { steps: readonly (readonly [string, string, string])[] }) {
+  const reduce = useReducedMotion();
+  const wide = useWide();
+  const [drawn, setDrawn] = useState(false);
+  const ref = useRef<HTMLElement>(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
+  return (
+    <section className="journey" id="path" ref={ref}>
+      <div className="journey-pin">
+        <p className="journey-kicker">Four steps</p>
+        <div className="journey-head">
+          <h2 className="display-md journey-title">
+            <motion.span
+              className="journey-line"
+              initial={reduce ? false : { opacity: 0, y: 24, rotate: 1.6 }}
+              whileInView={{ opacity: 1, y: 0, rotate: 0 }}
+              viewport={{ once: true, amount: 0.7 }}
+              transition={{ duration: 0.55, ease: POP }}
+            >
+              A path.
+            </motion.span>
+            <motion.span
+              className="journey-line"
+              initial={reduce ? false : { opacity: 0, y: 24, rotate: -1.4 }}
+              whileInView={{ opacity: 1, y: 0, rotate: 0 }}
+              viewport={{ once: true, amount: 0.7 }}
+              onViewportEnter={() => setDrawn(true)}
+              transition={{ duration: 0.55, delay: 0.08, ease: POP }}
+            >
+              <span className={drawn || reduce ? "marker drawn" : "marker"}>Not a pile.</span>
+            </motion.span>
+          </h2>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img alt="" className="journey-hand" height={1024} src="/assets/paperhands/illustrations/lock.png" width={747} />
+        </div>
+        <Link className="btn btn-pink journey-cta" href="/get-started">Get started</Link>
+      </div>
+      <div className="journey-stage">
+        {steps.map(([n, title, body], index) => (
+          <JourneyCard
+            body={body}
+            count={steps.length}
+            index={index}
+            key={n}
+            n={n}
+            progress={scrollYProgress}
+            stack={wide && !reduce}
+            title={title}
+          />
+        ))}
+      </div>
+      <p className="journey-after">
+        <Link href="/commitment">And you?</Link>
+      </p>
+    </section>
+  );
+}
+
+function JourneyCard({
+  n,
+  title,
+  body,
+  index,
+  count,
+  progress,
+  stack,
+}: {
+  n: string;
+  title: string;
+  body: string;
+  index: number;
+  count: number;
+  progress: ReturnType<typeof useScroll>["scrollYProgress"];
+  stack: boolean;
+}) {
+  const y = useTransform(progress, (value) => (index - value * (count - 1)) * 58);
+  const opacity = useTransform(progress, (value) => {
+    const delta = index - value * (count - 1);
+    if (delta > 0.08 || delta < -1.05) return 0;
+    return 1;
+  });
+  const scale = useTransform(progress, (value) => {
+    const delta = index - value * (count - 1);
+    return delta < 0 ? 1 + delta * 0.035 : 1;
+  });
+  return (
+    <motion.article className="journey-card" style={stack ? { y, opacity, scale, zIndex: index + 1 } : undefined}>
+      <header>
+        <span>{n}</span>
+        <h3>{title}</h3>
+      </header>
+      <p>{body}</p>
+    </motion.article>
+  );
+}
+
+function useWide() {
+  const [wide, setWide] = useState(false);
+  useEffect(() => {
+    const query = window.matchMedia("(min-width: 800px)");
+    const update = () => setWide(query.matches);
+    update();
+    query.addEventListener("change", update);
+    return () => query.removeEventListener("change", update);
+  }, []);
+  return wide;
 }
 
 function Reveal({ children, className, delay = 0 }: { children: ReactNode; className?: string; delay?: number }) {
