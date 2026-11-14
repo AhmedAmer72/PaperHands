@@ -739,27 +739,6 @@ details.faq p {
 }
 
 
-.epoch-stack {
-  margin-top: 2.5rem;
-}
-
-.epoch-card {
-  width: 100%;
-}
-
-.epoch-card + .epoch-card {
-  margin-top: 1.25rem;
-}
-
-.epoch-link {
-  display: block;
-  min-height: 14rem;
-  border-radius: 2.4rem;
-  background: #fff;
-  padding: 1.8rem 1.7rem;
-  box-shadow: 0 18px 46px #00000014;
-}
-
 .reserve-rail,
 .role-rail {
   display: flex;
@@ -918,22 +897,6 @@ details.faq p {
   .journey-after {
     grid-column: 1 / -1;
     align-self: end;
-  }
-
-  .epoch-card {
-    width: 54%;
-  }
-
-  .epoch-card.shift-0 {
-    margin-left: 8%;
-  }
-
-  .epoch-card.shift-1 {
-    margin-left: 34%;
-  }
-
-  .epoch-card.shift-2 {
-    margin-left: 20%;
   }
 
   .reserve-slide,
