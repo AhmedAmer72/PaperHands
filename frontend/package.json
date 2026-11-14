@@ -2,10 +2,13 @@
   "name": "frontend",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": "22.x"
+  },
   "scripts": {
-    "predev": "npm run build --prefix ../simulator",
+    "predev": "tsc -p ../simulator/tsconfig.build.json",
     "dev": "next dev",
-    "prebuild": "npm run build --prefix ../simulator",
+    "prebuild": "tsc -p ../simulator/tsconfig.build.json",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"
