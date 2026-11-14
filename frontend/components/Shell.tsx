@@ -115,6 +115,7 @@ function Frame({ children }: { children: React.ReactNode }) {
     <>
       {home ? <a className="skip" href="#main">Skip to content</a> : <Bar />}
       <main className={home ? "" : "mx-auto max-w-[1100px] px-5 py-8"} id="main" tabIndex={-1}>{children}</main>
+      {home ? <SiteFooter /> : null}
     </>
   );
 }
@@ -123,7 +124,6 @@ export function Shell({ children }: { children: React.ReactNode }) {
   return (
     <WalletProvider>
       <Frame>{children}</Frame>
-      <SiteFooter />
     </WalletProvider>
   );
 }
