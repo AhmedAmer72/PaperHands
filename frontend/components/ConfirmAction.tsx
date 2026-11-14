@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useRef } from "react";
 import { useWallet } from "@/lib/wallet";
+import { MorphingSquare } from "@/components/ui/morphing-square";
 
 export type ConfirmDetails = {
   title: string;
@@ -78,6 +79,7 @@ export function ConfirmAction({
         </dl>
         {details.warning ? <p className="mt-4 text-sm font-semibold text-ink">{details.warning}</p> : null}
         {signedOut ? <p className="mt-4 text-sm font-semibold text-orange" role="alert">Connect a Testnet wallet before this can be signed.</p> : null}
+        {busy ? <MorphingSquare className="mt-5 h-8 w-8" message="Waiting for the wallet…" messagePlacement="right" /> : null}
         <div className="mt-5 flex flex-wrap gap-3">
           <button className="btn btn-pink" disabled={busy || signedOut} onClick={onConfirm} ref={confirmRef} type="button">
             {busy ? "Waiting for the wallet…" : signedOut ? "Connect a wallet first" : "Confirm and sign"}
