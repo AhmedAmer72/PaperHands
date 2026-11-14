@@ -15,4 +15,4 @@ Import the GitHub repository and set the Root Directory to `frontend`. The frame
 
 No environment variables are required. The defaults in `frontend/lib/config.ts` are the Testnet demo accounts. To override them, copy the names from `../.env.example` into the Vercel project. Keep `NEXT_PUBLIC_NEAR_NETWORK` as `testnet`. Node 22 is the intended runtime.
 
-`next build` uses webpack. Turbopack 15.5.29 does not resolve the local `paperhands-simulator` package. The lab page is a simulation. Its Balanced supply is `1000999.99999990` PAPER.
+`next build` uses webpack. Turbopack 15.5.29 does not resolve the local `paperhands-simulator` package.

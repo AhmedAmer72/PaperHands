@@ -7,7 +7,7 @@ import { Field, FormError } from "@/components/Field";
 import { PageHead } from "@/components/PageChrome";
 import { Report } from "@/components/Report";
 import { CONTRACT_ID, ONE_YOCTO, TREASURY_CONTRACT_ID } from "@/lib/config";
-import { paper } from "@/lib/format";
+import { durationLabel, paper } from "@/lib/format";
 import { type TxReport, useWallet } from "@/lib/wallet";
 import { type ProposalView, type TreasuryBooks, listProposals, treasuryBooks, wholeToRaw } from "@/lib/v3";
 
@@ -52,7 +52,7 @@ export default function TreasuryPage() {
       {error ? <p className="card p-5 text-sm">Treasury did not answer. {error}</p> : null}
       {books ? (
         <article className="card grid gap-2 p-5 text-sm">
-          <p>{books.demo_clock ? "Demo timelock: 1 hour." : "Production timelock: 24 hours."}</p>
+          <p>Timelock {durationLabel(books.timelock_ns)}</p>
           <p>Assets {paper(books.assets)} · available {paper(books.available)} · reserved {paper(books.reserved)}</p>
           <p>Accounting difference {books.accounting_difference}</p>
         </article>

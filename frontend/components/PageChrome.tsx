@@ -4,17 +4,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const PAGES = [
-  ["/how-it-works", "How"],
-  ["/commitment", "Commitment"],
-  ["/paperhands-index", "Index"],
-  ["/economy", "Economy"],
-  ["/explorer", "Activity"],
+  ["/commitment", "Commit"],
+  ["/paperhands-index", "Epochs"],
   ["/sponsors", "Sponsors"],
   ["/missions", "Missions"],
   ["/treasury", "Treasury"],
-  ["/lab", "Lab"],
-  ["/rules", "Rules"],
-  ["/faq", "FAQ"],
 ];
 
 export function PageNav() {

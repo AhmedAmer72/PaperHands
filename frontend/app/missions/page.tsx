@@ -7,7 +7,7 @@ import { Field, FormError } from "@/components/Field";
 import { PageHead } from "@/components/PageChrome";
 import { Report } from "@/components/Report";
 import { MISSION_CONTRACT_ID, ONE_YOCTO } from "@/lib/config";
-import { paper } from "@/lib/format";
+import { clockLabel, paper } from "@/lib/format";
 import { type TxReport, useWallet } from "@/lib/wallet";
 import { type MissionView, listMissions, wholeToRaw } from "@/lib/v3";
 
@@ -110,7 +110,7 @@ export default function MissionsPage() {
       <div className="grid gap-4">
         {missions.map((item) => (
           <Link className="card block p-5" href={`/missions/${item.mission_id}`} key={item.mission_id}>
-            <p className="text-xs font-semibold text-forest">{item.demo_clock ? "DEMO CLOCK" : "PRODUCTION CLOCK"} · {item.state}</p>
+            <p className="text-xs font-semibold text-forest">{clockLabel(item.demo_clock)} · {item.state}</p>
             <h2 className="mt-2 font-display text-3xl">{item.objective}</h2>
             <p className="mt-2 text-sm">{paper(item.payout_each)} each · up to {item.max_acceptances} accepted · {item.assigned} assigned</p>
           </Link>

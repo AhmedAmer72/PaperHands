@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { PageHead } from "@/components/PageChrome";
 import { SPONSOR_CONTRACT_ID } from "@/lib/config";
-import { paper } from "@/lib/format";
+import { clockLabel, paper } from "@/lib/format";
 import { type CampaignView, type SponsorConfig, listCampaigns, sponsorConfig } from "@/lib/v3";
 
 export default function SponsorsPage() {
@@ -29,38 +29,22 @@ export default function SponsorsPage() {
   return (
     <section className="space-y-8">
       <PageHead
-        eyebrow="Sponsored epochs"
-        lede="A sponsor locks a reward pool. Participants lock a separate 1,000 PAPER. That lock is not a Diamond Core commitment, and the two streaks are not added together."
-        title="Fund a campaign. Keep the rules fixed."
+        eyebrow="Sponsors"
+        lede="Fund a reward pool. Participants lock a separate 1,000 PAPER."
+        title="Campaigns"
       />
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-wrap items-center gap-3">
         <Link className="btn btn-pink" href="/sponsors/create">Create a campaign</Link>
-        <Link className="btn btn-green" href="/rules">Read the sponsor rules</Link>
+        {config ? <p className="text-sm text-ink/70">{clockLabel(config.demo_clock)} · fee {config.protocol_fee_bps} bps</p> : null}
       </div>
-      <article className="card p-5">
-        <h2 className="font-display text-3xl">NEAR Intents</h2>
-        <p className="mt-3 max-w-3xl text-sm leading-relaxed text-ink/80">
-          Route discovery is not connected. A quote, even a signed one from another network, is not a join. SponsorHub records a join only after 1,000 PAPER arrives from the PAPER contract.
-        </p>
-        <button className="btn btn-cream mt-4" disabled type="button">Quotes unavailable</button>
-      </article>
-      {config ? (
-        <p className="text-sm text-ink/70">Contract {SPONSOR_CONTRACT_ID}.{" "}
-          {config.demo_clock
-            ? "Demo clock: 1 hour, 10 minute entry. This is not a 7 day production campaign."
-            : "Production clock: 7 days, 24 hour entry."}
-          {" "}Protocol fee {config.protocol_fee_bps} bps. Early exit is not a burn.
-        </p>
-      ) : null}
       {error ? <p className="card p-5 text-sm">SponsorHub did not answer. {error}</p> : null}
       {!loaded && !error ? <p aria-busy="true" className="card p-5 text-sm">Reading campaigns…</p> : null}
       {loaded && !error && campaigns.length === 0 ? <p className="card p-5 text-sm">No campaigns yet. Create one when you are ready to fund a reward pool.</p> : null}
       <div className="grid gap-4">
         {campaigns.map((item) => (
           <Link className="card block p-5" href={`/sponsors/${item.campaign_id}`} key={item.campaign_id}>
-            <p className="text-xs font-semibold text-forest">{item.demo_clock ? "DEMO CLOCK" : "PRODUCTION CLOCK"} · {item.state}</p>
+            <p className="text-xs font-semibold text-forest">{clockLabel(item.demo_clock)} · {item.state}</p>
             <h2 className="mt-2 font-display text-3xl">{item.name}</h2>
-            <p className="mt-2 text-sm text-ink/75">{item.description}</p>
             <p className="mt-3 text-sm">Reward pool {paper(item.reward_amount)} · {item.active_participants} active · cap {item.participant_cap}</p>
           </Link>
         ))}

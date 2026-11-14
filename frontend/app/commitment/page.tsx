@@ -1,17 +1,17 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
-import { PageHead, PhaseTrack, Stat } from "@/components/PageChrome";
+import { PageHead, PhaseTrack } from "@/components/PageChrome";
 import { Report } from "@/components/Report";
 import { type CurrentEpoch, type UserEpochState, contractReady, view } from "@/lib/chain";
-import { COMMITMENT_STORAGE_BYTES, DEPOSIT_JOIN, DEPOSIT_STORAGE, FIRST_JOIN_STORAGE_BYTES } from "@/lib/config";
-import { deploymentBanner, durationLabel, paper, remaining } from "@/lib/format";
+import { DEPOSIT_JOIN, DEPOSIT_STORAGE } from "@/lib/config";
+import { durationLabel, paper, remaining } from "@/lib/format";
 import { type TxReport, useWallet } from "@/lib/wallet";
 
 export default function CommitmentPage() {
   const wallet = useWallet();
   const [epoch, setEpoch] = useState<CurrentEpoch | null>(null);
-  const [rules, setRules] = useState<{ min_participants: number; retention_numerator: number; retention_denominator: number; max_mint_per_epoch: string } | null>(null);
   const [mine, setMine] = useState<UserEpochState | null>(null);
   const [balance, setBalance] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(contractReady());
@@ -21,7 +21,6 @@ export default function CommitmentPage() {
   async function reload(accountId: string | null) {
     const current = await view<CurrentEpoch>("get_current_epoch");
     setEpoch(current);
-    setRules(await view("get_economic_config"));
     if (accountId) {
       setMine(await view<UserEpochState>("get_user_epoch_state", { epoch_id: current.epoch_id, account_id: accountId }));
     }
@@ -62,22 +61,27 @@ export default function CommitmentPage() {
   return (
     <section className="space-y-8">
       <PageHead
-        eyebrow="Diamond commitment"
-        lede="Lock exactly 1,000 PAPER for this epoch. The buttons below send the real contract methods. A transaction is not successful until the wallet and the RPC both return SuccessValue."
-        title="Sign it, or don't."
+        eyebrow="Commitment"
+        lede="Lock 1,000 PAPER for this epoch."
+        title="Join this epoch."
       />
 
       <div className="rounded-[2rem] bg-forest p-6 text-cream md:p-8">
-        <p className="text-sm text-cream/80">{epoch ? deploymentBanner(epoch.deployment_kind, epoch.faucet_enabled) : error}</p>
-        <div className="mt-6">
+        {error ? <p className="text-sm text-cream/80">{error}</p> : null}
+        <div className={error ? "mt-6" : undefined}>
           <PhaseTrack phase={epoch?.phase ?? null} />
         </div>
-        <dl className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <dl className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <BandStat label="Epoch" value={epoch ? epoch.epoch_id : "—"} />
-          <BandStat label="Time left in phase" value={left} />
-          <BandStat label="Your status" value={mine?.status ?? "no commitment read"} />
-          <BandStat label="PAPER balance" value={wallet.accountId ? (balance ? paper(balance) : "unread") : "wallet off"} />
+          <BandStat label="Time left" value={left} />
+          <BandStat label="Your status" value={mine?.status ?? "—"} />
+          <BandStat label="PAPER balance" value={wallet.accountId ? (balance ? paper(balance) : "—") : "—"} />
+          <BandStat label="Epoch length" value={durationLabel(epoch?.epoch_duration_ns)} />
+          <BandStat label="Entry window" value={durationLabel(epoch?.entry_window_ns)} />
         </dl>
+        {epoch ? (
+          <Link className="btn btn-cream mt-6" href={`/epoch/${epoch.epoch_id}`}>Finalize and claim</Link>
+        ) : null}
         {!wallet.accountId ? (
           <button className="btn btn-pink mt-6" onClick={() => void wallet.connect()} type="button">
             {wallet.busy ? "Connecting…" : "Connect Testnet"}
@@ -87,44 +91,8 @@ export default function CommitmentPage() {
         )}
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
-        <article className="card overflow-hidden p-6">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img alt="" className="card-art" height={1024} src="/assets/paperhands/illustrations/bill.png" width={765} />
-          <h2 className="font-display text-4xl">Paper hands</h2>
-          <ul className="mt-4 space-y-2 text-ink/80">
-            <li>Leave after the entry window and before the epoch ends.</li>
-            <li>Receive 950 PAPER. 25 is burned. 25 is assigned to survivors.</li>
-            <li>Lose reward eligibility for that epoch. You cannot rejoin it.</li>
-          </ul>
-        </article>
-        <article className="card forest overflow-hidden p-6 text-cream">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img alt="" className="card-art" height={1024} src="/assets/paperhands/illustrations/diamond.png" width={775} />
-          <h2 className="font-display text-4xl">Diamond hands</h2>
-          <ul className="mt-4 space-y-2 text-cream/85">
-            <li>Stay through the epoch.</li>
-            <li>Claim the original 1,000 PAPER after settlement. Principal does not expire.</li>
-            <li>Share the epoch mint and the survivor bonus, if the settlement assigns them.</li>
-          </ul>
-        </article>
-      </div>
-
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        <Stat label="This deployment" note="Read from the contract, not assumed to be 7 days" value={durationLabel(epoch?.epoch_duration_ns, epoch?.deployment_kind)} />
-        <Stat label="Entry window" value={durationLabel(epoch?.entry_window_ns, epoch?.deployment_kind)} />
-        <Stat label="Early exit" note="50% of the penalty is burned. 50% rewards whoever stays." value="950 back" />
-        <Stat label="Failure rule" note="Survivors can still claim principal and any assigned rewards." value={rules ? `${rules.min_participants} accounts or ${Math.round((Number(rules.retention_numerator) / Number(rules.retention_denominator)) * 100)}%` : "—"} />
-        <Stat label="Mint cap" note="Of active locked principal. Not an APY." value={rules ? paper(rules.max_mint_per_epoch) : "—"} />
-        <Stat label="Storage" note={`First join writes ${FIRST_JOIN_STORAGE_BYTES} bytes. Later commitments write ${COMMITMENT_STORAGE_BYTES}. Cancel does not refund the NEAR stake.`} value="0.00067 NEAR" />
-      </div>
-
       <div className="card p-6 md:p-8">
-        <h2 className="font-display text-4xl">The signature</h2>
-        <p className="mt-3 max-w-2xl text-sm leading-relaxed text-ink/70">
-          The wallet attaches 0.1 NEAR on join, cancel, and exit. The contract refunds the unused part. Register storage attaches 0.05 NEAR. Rewards last 30 days after finalization. The faucet pays 1,000 PAPER once per account from the reserve. It does not mint, and a new Testnet account is a new claim. It is not proof of humanity.
-        </p>
-        <label className="mt-6 flex items-start gap-3 rounded-2xl bg-pink/40 p-4 text-sm">
+        <label className="flex items-start gap-3 rounded-2xl bg-pink/40 p-4 text-sm">
           <input checked={confirmed} className="mt-1" onChange={(event) => setConfirmed(event.target.checked)} type="checkbox" />
           <span>I understand the 1,000 PAPER lock, the 5% early-exit penalty, and that this screen shows the contract&apos;s real duration.</span>
         </label>

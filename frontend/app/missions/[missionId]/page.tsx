@@ -7,7 +7,7 @@ import { Field, FormError } from "@/components/Field";
 import { PageHead } from "@/components/PageChrome";
 import { Report } from "@/components/Report";
 import { CONTRACT_ID, MISSION_CONTRACT_ID, ONE_YOCTO } from "@/lib/config";
-import { paper } from "@/lib/format";
+import { clockLabel, paper } from "@/lib/format";
 import { type TxReport, useWallet } from "@/lib/wallet";
 import { type MissionBooks, type MissionView, type SubmissionView, mission, missionBooks, missionBudget, submission } from "@/lib/v3";
 
@@ -97,7 +97,7 @@ export default function MissionPage() {
 
   return (
     <section className="space-y-8">
-      <PageHead eyebrow={item?.demo_clock ? "Demo mission" : "Mission"} lede={item?.scope || "Mission terms come from MissionHub."} title={item?.objective || `Mission ${id}`} />
+      <PageHead eyebrow="Mission" lede={item ? `${clockLabel(item.demo_clock)}. ${item.scope}` : "Mission terms come from MissionHub."} title={item?.objective || `Mission ${id}`} />
       {item ? (
         <article className="card grid gap-2 p-5 text-sm">
           <p>State {item.state} · payout {paper(item.payout_each)} · cap {item.max_acceptances}</p>

@@ -39,7 +39,7 @@ export default function CreateSponsorPage() {
       token: "No PAPER moves on this signature.",
       amount: `${reward} PAPER reward, still unfunded`,
       role: "draft terms, not principal",
-      warning: "The clock matches this SponsorHub deployment. A demo hub can only create a 1 hour demo campaign. Funding is a second signature.",
+      warning: "The campaign uses this contract's epoch length. Funding is a second signature.",
       refundPath: "Before anyone joins, cancel returns the full reward deposit.",
     });
   }
