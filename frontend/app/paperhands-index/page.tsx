@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { PageHead, Stat } from "@/components/PageChrome";
-import { type CurrentEpoch, type EpochDetail, type ProtocolBalances, contractReady, view } from "@/lib/chain";
+import { type CurrentEpoch, type EpochDetail, type ProtocolBalances, contractReady, view, viewEpochs } from "@/lib/chain";
 import { paper } from "@/lib/format";
 
 export default function IndexPage() {
@@ -18,9 +18,8 @@ export default function IndexPage() {
       try {
         const current = await view<CurrentEpoch>("get_current_epoch");
         const books = await view<ProtocolBalances>("get_protocol_balances");
-        const latest = Number(current.epoch_id);
-        const ids = Array.from({ length: Math.min(latest + 1, 12) }, (_, index) => latest - index).filter((id) => id >= 0);
-        const details = await Promise.all(ids.map((id) => view<EpochDetail>("get_epoch", { epoch_id: id.toString() })));
+        const details = await viewEpochs(0, Number(current.epoch_id));
+        details.reverse();
         setEpoch(current);
         setBalances(books);
         setRows(details);
@@ -54,7 +53,7 @@ export default function IndexPage() {
       <div className="card p-6">
         <h2 className="font-display text-4xl">Retention</h2>
         <p className="mt-2 text-sm text-ink/65">Each bar is that epoch&apos;s retention basis points, scaled to the widest finalized epoch on this page. Open epochs are listed underneath and are not drawn as a success.</p>
-        {settled.length === 0 ? <p className="mt-4 text-ink/60">No finalized epoch has been read.</p> : null}
+        {settled.length === 0 ? <p className="mt-4 text-ink/60">{epoch ? "No finalized epoch has been read." : "Reading every epoch from the contract."}</p> : null}
         <ul className="mt-5 space-y-3">
           {settled.map((row) => (
             <li className="grid items-center gap-3 text-sm sm:grid-cols-[5rem_1fr_4.5rem]" key={row.epoch_id}>
@@ -76,7 +75,7 @@ export default function IndexPage() {
               <p>{row.finalized ? (row.success ? "Finalized success" : "Finalized failure") : row.phase}</p>
               <p className="mt-1">Original {row.original_participants ?? "open"} · active {row.active_participants} · exits {row.early_exits}</p>
             </div>
-            <p className="text-sm font-semibold">{row.retention_bps != null ? `${(row.retention_bps / 100).toFixed(2)}% kept` : "Retention unread"}</p>
+            <p className="text-sm font-semibold">{row.retention_bps != null ? `${(row.retention_bps / 100).toFixed(2)}% kept` : "Not settled"}</p>
           </Link>
         ))}
       </div>

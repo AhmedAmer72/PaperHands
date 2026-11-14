@@ -46,15 +46,15 @@ export default function EconomyPage() {
     <section className="space-y-8">
       <PageHead
         eyebrow="Token economy"
-        lede="The init split is a rule. The live supply, reserves, and accounting difference appear only after the contract answers. 26,000 PAPER a year is a cap on seven-day epochs, not a yield."
-        title="One million. Two reserves."
+        lede="Supply, reserves, and the accounting difference are contract views. The init supply and faucet cap are the amounts stored at deployment, not a second set of balances."
+        title="Books from the contract."
       />
       <p className="max-w-3xl text-sm text-ink/70">{epoch ? deploymentBanner(epoch.deployment_kind, epoch.faucet_enabled) : error}</p>
 
       <div className="grid gap-3 md:grid-cols-3">
-        <Stat label="Initial supply" note="Minted once at init. 8 decimals." tone="forest" value="1,000,000" />
-        <Stat label="Community / testnet" note="Faucet reserve. Claims move it. They do not mint." tone="pink" value="700,000" />
-        <Stat label="Burn reserve" note="Failed epochs burn up to 250 PAPER from here." tone="ink" value="300,000" />
+        <Stat label="Initial supply" note="Minted once at init. 8 decimals." tone="forest" value={paper(config ? String(config.initial_supply) : null)} />
+        <Stat label="Faucet reserve" note={config ? `Init cap ${paper(String(config.faucet_cap))}. Claims spend this reserve.` : "Unread until the contract answers."} tone="pink" value={paper(balances?.faucet_reserve)} />
+        <Stat label="Burn reserve" note="Live balance. Failed epochs burn from here." tone="ink" value={paper(balances?.burn_reserve)} />
       </div>
 
       <div className="card grid gap-6 p-6 md:grid-cols-2 md:p-8">

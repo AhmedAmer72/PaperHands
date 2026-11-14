@@ -23,8 +23,8 @@ export default function MissionsPage() {
   const [criteria, setCriteria] = useState("");
   const [reviewer, setReviewer] = useState("");
   const [escalation, setEscalation] = useState("");
-  const [payout, setPayout] = useState("10");
-  const [maximum, setMaximum] = useState("1");
+  const [payout, setPayout] = useState("");
+  const [maximum, setMaximum] = useState("");
   const [formError, setFormError] = useState<string | null>(null);
   const [confirming, setConfirming] = useState<ConfirmDetails | null>(null);
   const [report, setReport] = useState<TxReport | null>(null);

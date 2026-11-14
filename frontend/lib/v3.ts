@@ -133,8 +133,23 @@ export function sponsorConfig(contractId: string) {
   return viewAt<SponsorConfig>(contractId, "get_protocol_config");
 }
 
+async function listPages<T extends Record<string, unknown>>(contractId: string, method: string, idKey: string): Promise<T[]> {
+  const rows: T[] = [];
+  let from = 1;
+  for (let page = 0; page < 40; page += 1) {
+    const chunk = await viewAt<T[]>(contractId, method, { from_index: String(from), limit: "50" });
+    if (chunk.length === 0) break;
+    rows.push(...chunk);
+    const lastRaw = chunk[chunk.length - 1]?.[idKey];
+    const last = typeof lastRaw === "string" || typeof lastRaw === "number" ? Number(lastRaw) : Number.NaN;
+    if (!Number.isFinite(last) || chunk.length < 50) break;
+    from = last + 1;
+  }
+  return rows;
+}
+
 export function listCampaigns(contractId: string) {
-  return viewAt<CampaignView[]>(contractId, "list_campaigns", { from_index: "1", limit: "50" });
+  return listPages<CampaignView>(contractId, "list_campaigns", "campaign_id");
 }
 
 export function campaign(contractId: string, campaignId: string) {
@@ -150,7 +165,7 @@ export function participant(contractId: string, campaignId: string, accountId: s
 }
 
 export function listMissions(contractId: string) {
-  return viewAt<MissionView[]>(contractId, "list_missions", { from_index: "1", limit: "50" });
+  return listPages<MissionView>(contractId, "list_missions", "mission_id");
 }
 
 export function mission(contractId: string, missionId: string) {
@@ -175,7 +190,7 @@ export function missionBudget(payoutEach: string, maxAcceptances: number): strin
 }
 
 export function listProposals(contractId: string) {
-  return viewAt<ProposalView[]>(contractId, "list_proposals", { from_index: "1", limit: "50" });
+  return listPages<ProposalView>(contractId, "list_proposals", "proposal_id");
 }
 
 export function proposal(contractId: string, proposalId: string) {

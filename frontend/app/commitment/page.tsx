@@ -11,6 +11,7 @@ import { type TxReport, useWallet } from "@/lib/wallet";
 export default function CommitmentPage() {
   const wallet = useWallet();
   const [epoch, setEpoch] = useState<CurrentEpoch | null>(null);
+  const [rules, setRules] = useState<{ min_participants: number; retention_numerator: number; retention_denominator: number; max_mint_per_epoch: string } | null>(null);
   const [mine, setMine] = useState<UserEpochState | null>(null);
   const [balance, setBalance] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(contractReady());
@@ -20,6 +21,7 @@ export default function CommitmentPage() {
   async function reload(accountId: string | null) {
     const current = await view<CurrentEpoch>("get_current_epoch");
     setEpoch(current);
+    setRules(await view("get_economic_config"));
     if (accountId) {
       setMine(await view<UserEpochState>("get_user_epoch_state", { epoch_id: current.epoch_id, account_id: accountId }));
     }
@@ -112,8 +114,8 @@ export default function CommitmentPage() {
         <Stat label="This deployment" note="Read from the contract, not assumed to be 7 days" value={durationLabel(epoch?.epoch_duration_ns, epoch?.deployment_kind)} />
         <Stat label="Entry window" value={durationLabel(epoch?.entry_window_ns, epoch?.deployment_kind)} />
         <Stat label="Early exit" note="50% of the penalty is burned. 50% rewards whoever stays." value="950 back" />
-        <Stat label="Failure rule" note="Survivors can still claim principal and any assigned rewards." value="25 people or 80%" />
-        <Stat label="Mint cap" note="1% of active locked principal. Not an APY." value="500 PAPER" />
+        <Stat label="Failure rule" note="Survivors can still claim principal and any assigned rewards." value={rules ? `${rules.min_participants} accounts or ${Math.round((Number(rules.retention_numerator) / Number(rules.retention_denominator)) * 100)}%` : "—"} />
+        <Stat label="Mint cap" note="Of active locked principal. Not an APY." value={rules ? paper(rules.max_mint_per_epoch) : "—"} />
         <Stat label="Storage" note={`First join writes ${FIRST_JOIN_STORAGE_BYTES} bytes. Later commitments write ${COMMITMENT_STORAGE_BYTES}. Cancel does not refund the NEAR stake.`} value="0.00067 NEAR" />
       </div>
 
