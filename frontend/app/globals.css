@@ -205,6 +205,31 @@ h2,
   color: #ffa9e9;
 }
 
+.hero-nav .btn {
+  background: #fffdf7;
+  color: #461e10;
+  font-size: 0.75rem;
+  padding: 0.55rem 0.9rem;
+}
+
+.hero-nav .btn:hover {
+  color: #fffdf7;
+}
+
+.hero-nav .btn-pink {
+  background: #ffa9e9;
+  color: #461e10;
+}
+
+.hero-nav .btn-pink:hover {
+  background: #461e10;
+  color: #ffa9e9;
+}
+
+.hero-nav .btn-cream:hover {
+  background: #461e10;
+}
+
 .hero-mark {
   display: flex;
   justify-content: center;

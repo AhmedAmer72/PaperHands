@@ -86,29 +86,22 @@ export function HomeExperience() {
       <section className="mx-auto w-full">
         <div className="hero-card">
           <header className="hero-nav">
-            <nav aria-label="Primary" className="hero-nav-side hero-nav-left">
-              <Link href="/get-started">Get started</Link>
-              <Link href="/commitment">Commit</Link>
-              <Link href="/paperhands-index">Epochs</Link>
-              <Link href="/sponsors">Sponsors</Link>
-            </nav>
+            <div className="hero-nav-side" />
             <Link aria-label="PaperHands home" className="hero-mark" href="/">
               <Wordmark className="h-12 w-auto text-cream sm:h-14" />
             </Link>
-            <nav aria-label="More" className="hero-nav-side hero-nav-right">
-              <Link href="/missions">Missions</Link>
-              <Link href="/treasury">Treasury</Link>
+            <div className="hero-nav-side hero-nav-right">
               {wallet.accountId ? (
                 <>
-                  <Link href={`/profile/${wallet.accountId}`}>Profile</Link>
-                  <button onClick={() => void wallet.disconnect()} type="button">Disconnect</button>
+                  <Link className="btn btn-cream px-3 text-xs" href={`/profile/${wallet.accountId}`}>Your profile</Link>
+                  <button className="btn btn-cream px-3 text-xs" onClick={() => void wallet.disconnect()} type="button">Disconnect</button>
                 </>
               ) : (
-                <button disabled={wallet.busy} onClick={() => void wallet.connect()} type="button">
-                  {wallet.busy ? <MorphingSquare className="h-4 w-4 bg-pink" message="Connecting" messagePlacement="right" /> : "Connect"}
+                <button className="btn btn-pink px-3 text-xs" disabled={wallet.busy} onClick={() => void wallet.connect()} type="button">
+                  {wallet.busy ? <MorphingSquare className="h-4 w-4 bg-ink" message="Connecting" messagePlacement="right" /> : "Connect Testnet"}
                 </button>
               )}
-            </nav>
+            </div>
           </header>
           <div className="hero-hands" aria-hidden>
             <div className="hand hand-paper" data-reveal="hand" style={wait(0.15)}>
@@ -132,7 +125,7 @@ export function HomeExperience() {
             </p>
             <div className="toggle">
               <Link className="on" href="/commitment">Join this epoch</Link>
-              <Link className="off" href="/sponsors">Sponsor a campaign</Link>
+              <Link className="off" href="/docs">Docs</Link>
             </div>
             {wallet.error ? <p className="mt-4 text-sm text-pink">{wallet.error}</p> : null}
           </div>
