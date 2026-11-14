@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRef, useState, type ReactNode } from "react";
 import { motion, useReducedMotion, useScroll, useTransform } from "motion/react";
 import type { EpochDetail } from "@/lib/chain";
+import { percentFromBps } from "@/lib/format";
 import { ColorfulBentoGrid, type BentoTile, type BentoTone } from "@/components/ui/colorful-bento-grid";
 import HowItWorks from "@/components/ui/how-it-works";
 import { MorphingSquare } from "@/components/ui/morphing-square";
@@ -239,7 +240,7 @@ function EpochBoard({ listings, loading }: { listings: EpochDetail[]; loading: b
   const exits = shown.reduce((sum, item) => sum + item.early_exits, 0);
   const tiles: BentoTile[] = shown.map((item, index) => ({
     href: `/epoch/${item.epoch_id}`,
-    eyebrow: item.retention_bps == null ? "Retention pending" : `${(item.retention_bps / 100).toFixed(2)}% stayed`,
+    eyebrow: item.retention_bps == null ? "Retention pending" : `${percentFromBps(item.retention_bps)} stayed`,
     title: `Epoch ${item.epoch_id}`,
     lines: [`${item.active_participants} still in`, `${item.early_exits} left early`],
     image: BOARD_ART[index % BOARD_ART.length],

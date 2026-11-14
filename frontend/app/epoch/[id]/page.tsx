@@ -7,7 +7,7 @@ import { Stat } from "@/components/PageChrome";
 import { Report } from "@/components/Report";
 import { type CurrentEpoch, type EpochDetail, type UserEpochState, contractReady, view } from "@/lib/chain";
 import { CONTRACT_ID, DEPOSIT_JOIN } from "@/lib/config";
-import { paper, timestampLabel } from "@/lib/format";
+import { paper, percentFromBps, timestampLabel } from "@/lib/format";
 import { CONTRACT_ACCOUNT_NOTE } from "@/lib/tx-error";
 import { type TxReport, useWallet } from "@/lib/wallet";
 
@@ -100,7 +100,7 @@ export default function EpochPage() {
         <>
           <div className="rounded-[2rem] bg-forest p-6 text-cream md:p-8">
             <p className="text-sm uppercase tracking-wide text-cream/70">{detail.finalized ? (detail.success ? "Finalized success" : "Finalized failure") : detail.phase}</p>
-            <p className="mt-3 font-display text-6xl">{detail.retention_bps != null ? `${(detail.retention_bps / 100).toFixed(2)}%` : "Open"}</p>
+            <p className="mt-3 font-display text-6xl">{detail.retention_bps != null ? percentFromBps(detail.retention_bps) : "Open"}</p>
             <p className="mt-2 text-sm text-cream/75">Retention. Original {detail.original_participants ?? "open"} · active {detail.active_participants} · exits {detail.early_exits}</p>
           </div>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
