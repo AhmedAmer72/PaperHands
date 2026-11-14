@@ -154,6 +154,10 @@ h2,
   font-weight: 600;
 }
 
+.hero-frame {
+  padding-top: 0.75rem;
+}
+
 .hero-card {
   position: relative;
   overflow: hidden;
@@ -1009,6 +1013,39 @@ details.faq p {
   .reserve-slide,
   .role-slide {
     flex-basis: 46%;
+  }
+}
+
+@media (min-width: 901px) {
+  .hero-frame {
+    padding-top: 1.15rem;
+    padding-bottom: 1.15rem;
+  }
+
+  .hero-card {
+    display: flex;
+    flex-direction: column;
+    min-height: calc(100svh - 2.3rem);
+    padding: clamp(1.2rem, 2vw, 1.75rem);
+  }
+
+  .hero-copy {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .hand-paper {
+    top: auto;
+    bottom: 7%;
+    left: 0.35rem;
+  }
+
+  .hand-diamond {
+    top: 36%;
+    right: 0.2rem;
+    bottom: auto;
   }
 }
 
