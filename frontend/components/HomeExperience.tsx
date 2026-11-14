@@ -118,11 +118,11 @@ export function HomeExperience() {
           <div className="hero-hands" aria-hidden>
             <div className="hand hand-paper" data-reveal="hand" style={wait(0.15)}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img alt="" height={1024} src="/assets/paperhands/illustrations/bill.png" width={764} />
+              <img alt="" height={1024} src="/assets/paperhands/illustrations/bill.png" width={765} />
             </div>
             <div className="hand hand-diamond" data-reveal="hand" style={wait(0.4)}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img alt="" height={1024} src="/assets/paperhands/illustrations/diamond.png" width={824} />
+              <img alt="" height={1024} src="/assets/paperhands/illustrations/diamond.png" width={775} />
             </div>
           </div>
           <div className="hero-copy relative z-10 mx-auto max-w-3xl text-center" data-reveal="soft">
@@ -162,7 +162,7 @@ export function HomeExperience() {
         <div className="text-center" data-reveal="soft">
           <div className="mx-auto w-fit" data-reveal="hand">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img alt="" className="h-44 w-auto" height={757} src="/assets/paperhands/illustrations/handshake.png" width={764} />
+            <img alt="" className="h-44 w-auto" height={847} src="/assets/paperhands/illustrations/handshake.png" width={894} />
           </div>
           <p className="eyebrow mt-2">Live community</p>
         <h2 className="display-md mt-3 text-center">
@@ -192,7 +192,7 @@ export function HomeExperience() {
         <div className="mt-8 grid gap-4 lg:grid-cols-2">
           <article className="card p-6" data-reveal="tilt">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img alt="" className="card-art" height={1024} src="/assets/paperhands/illustrations/bill.png" width={764} />
+            <img alt="" className="card-art" height={1024} src="/assets/paperhands/illustrations/bill.png" width={765} />
             <h3 className="mt-2 font-display text-4xl">Paper hands</h3>
             <ul className="mt-4 space-y-2 text-ink/80">
               <li>Leave after the entry window.</li>
@@ -202,7 +202,7 @@ export function HomeExperience() {
           </article>
           <article className="card forest p-6 text-cream" data-reveal="tilt-right" style={wait(0.12)}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img alt="" className="card-art" height={1024} src="/assets/paperhands/illustrations/diamond.png" width={824} />
+            <img alt="" className="card-art" height={1024} src="/assets/paperhands/illustrations/diamond.png" width={775} />
             <h3 className="mt-2 font-display text-4xl">Diamond hands</h3>
             <ul className="mt-4 space-y-2 text-cream/85">
               <li>Remain committed through the epoch.</li>
@@ -234,7 +234,7 @@ export function HomeExperience() {
           <p className="mt-4 text-ink/75">Six actions. The contract is the one that moves PAPER. The buttons live on the commitment page.</p>
           <div className="mt-6 hidden w-fit lg:block" data-reveal="hand">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img alt="" className="h-64 w-auto" height={1024} src="/assets/paperhands/illustrations/lock.png" width={764} />
+            <img alt="" className="h-64 w-auto" height={1024} src="/assets/paperhands/illustrations/lock.png" width={747} />
           </div>
         </div>
         <ol className="grid gap-4">
@@ -367,7 +367,7 @@ export function HomeExperience() {
         <div className="grid gap-4 md:grid-cols-2">
           <div className="relative overflow-hidden rounded-[2rem] bg-forest p-6 text-cream" data-reveal>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img alt="" className="ml-auto h-28 w-auto" height={206} src="/assets/paperhands/illustrations/bump.png" width={240} />
+            <img alt="" className="ml-auto h-28 w-auto" height={211} src="/assets/paperhands/illustrations/bump.png" width={246} />
             <p className="font-display text-4xl">Weak hands. Strong rules.</p>
             <p className="mt-3 text-cream/80">PAPERHANDS on NEAR. The faucet is not Sybil-proof.</p>
           </div>
