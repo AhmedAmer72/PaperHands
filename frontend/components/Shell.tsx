@@ -115,10 +115,11 @@ function Bar() {
 
 function Frame({ children }: { children: React.ReactNode }) {
   const path = usePathname();
+  const home = path === "/";
   return (
     <>
-      <Bar />
-      <main className={path === "/" ? "" : "mx-auto max-w-[1100px] px-5 py-8"} id="main" tabIndex={-1}>{children}</main>
+      {home ? <a className="skip" href="#main">Skip to content</a> : <Bar />}
+      <main className={home ? "" : "mx-auto max-w-[1100px] px-5 py-8"} id="main" tabIndex={-1}>{children}</main>
     </>
   );
 }
