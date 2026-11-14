@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState, type CSSProperties } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 import {
   type CurrentEpoch,
   type EpochDetail,
@@ -113,12 +113,11 @@ export function HomeExperience() {
               <img alt="" height={1024} src="/assets/paperhands/illustrations/diamond.png" width={775} />
             </div>
           </div>
-          <div className="hero-copy relative z-10 mx-auto max-w-3xl text-center" data-reveal="soft">
-            <p className="text-sm font-semibold text-cream">Don&apos;t just hold. Prove it.</p>
-            <h1 className="display mt-4">
-              Weak hands.
-              <br />
-              <span className="marker">Strong rules.</span>
+          <div className="hero-copy relative z-10 text-center" data-reveal="soft">
+            <p className="text-base font-semibold text-cream md:text-lg">Don&apos;t just hold. Prove it.</p>
+            <h1 className="display hero-title mt-5">
+              <FitLine>Weak hands.</FitLine>
+              <FitLine mark>Strong rules.</FitLine>
             </h1>
             <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-cream/90 md:text-lg">
               Lock your PAPER. Stand with the community. Let your commitment speak on-chain.
@@ -150,5 +149,50 @@ export function HomeExperience() {
 
 function wait(seconds: number): CSSProperties {
   return { "--delay": `${seconds}s` } as CSSProperties;
+}
+
+function FitLine({ children, mark = false }: { children: string; mark?: boolean }) {
+  const box = useRef<HTMLSpanElement>(null);
+  const text = useRef<HTMLSpanElement>(null);
+
+  useLayoutEffect(() => {
+    const outer = box.current;
+    const inner = text.current;
+    if (!outer || !inner) return;
+
+    let fitted = 0;
+    const fit = () => {
+      const available = outer.clientWidth;
+      if (available <= 0) return;
+      inner.style.fontSize = "100px";
+      const needed = inner.scrollWidth;
+      if (needed <= 0) return;
+      const next = (available / needed) * 99.2;
+      if (fitted > 0 && Math.abs(next - fitted) < 0.4) {
+        inner.style.fontSize = `${fitted}px`;
+        return;
+      }
+      fitted = next;
+      inner.style.fontSize = `${next}px`;
+    };
+
+    fit();
+    const observer = new ResizeObserver(fit);
+    observer.observe(outer);
+    let alive = true;
+    void document.fonts?.ready.then(() => {
+      if (alive) fit();
+    });
+    return () => {
+      alive = false;
+      observer.disconnect();
+    };
+  }, [children]);
+
+  return (
+    <span className={mark ? "hero-line hero-line-mark" : "hero-line"} ref={box}>
+      <span ref={text}>{children}</span>
+    </span>
+  );
 }
 
