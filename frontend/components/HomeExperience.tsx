@@ -115,7 +115,7 @@ export function HomeExperience() {
           </div>
           <div className="hero-copy relative z-10 text-center" data-reveal="soft">
             <p className="text-base font-semibold text-cream md:text-lg">Don&apos;t just hold. Prove it.</p>
-            <h1 className="display hero-title mt-6 md:mt-8">
+            <h1 className="display hero-title mt-5">
               <FitLine>Weak hands.</FitLine>
               <FitLine mark>Strong rules.</FitLine>
             </h1>
