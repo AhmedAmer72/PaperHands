@@ -99,6 +99,16 @@ The live clock is a **1 hour** epoch and a **10 minute** entry window. That is t
 
 The 25-account run is one operator. Read [docs/SYBIL_LIMITATIONS.md](docs/SYBIL_LIMITATIONS.md) next to those results. Hashes for that run are in [docs/TESTNET_E2E_REPORT.md](docs/TESTNET_E2E_REPORT.md).
 
+## Deploy the app on Vercel
+
+The Next.js app is `frontend/`, not the repository root.
+
+1. Import this repository in Vercel.
+2. Set the Root Directory to `frontend`. Leave the framework as Next.js.
+3. Deploy. The build command in `frontend/vercel.json` is `npm run build`. That compiles the local simulator package, then runs `next build`.
+
+The site works with no environment variables. It reads the Testnet accounts in `frontend/lib/config.ts`. Optional overrides are listed in `.env.example`. Keep the network on `testnet`. The app does not connect a mainnet wallet.
+
 ## Visual design
 
 The landing page is a cream, forest, and pink editorial layout. The reference audit is [docs/design-audit.md](docs/design-audit.md). Tokens live in [docs/design-system.md](docs/design-system.md) and `frontend/app/globals.css`. What changed, and what was actually checked, is [docs/visual-implementation.md](docs/visual-implementation.md). Phamily artwork stays in `design-reference/` and is not part of the product.
