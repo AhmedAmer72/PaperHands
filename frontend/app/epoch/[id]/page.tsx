@@ -5,9 +5,10 @@ import { useParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { Stat } from "@/components/PageChrome";
 import { Report } from "@/components/Report";
-import { type EpochDetail, type UserEpochState, contractReady, view } from "@/lib/chain";
-import { DEPOSIT_JOIN } from "@/lib/config";
+import { type CurrentEpoch, type EpochDetail, type UserEpochState, contractReady, view } from "@/lib/chain";
+import { CONTRACT_ID, DEPOSIT_JOIN } from "@/lib/config";
 import { paper, timestampLabel } from "@/lib/format";
+import { CONTRACT_ACCOUNT_NOTE } from "@/lib/tx-error";
 import { type TxReport, useWallet } from "@/lib/wallet";
 
 export default function EpochPage() {
@@ -15,14 +16,19 @@ export default function EpochPage() {
   const id = params.id;
   const wallet = useWallet();
   const [detail, setDetail] = useState<EpochDetail | null>(null);
+  const [clock, setClock] = useState<CurrentEpoch | null>(null);
   const [mine, setMine] = useState<UserEpochState | null>(null);
   const [error, setError] = useState<string | null>(contractReady());
   const [report, setReport] = useState<TxReport | null>(null);
 
   const accountId = wallet.accountId;
   const reload = useCallback(async () => {
-    const next = await view<EpochDetail>("get_epoch", { epoch_id: id });
+    const [next, current] = await Promise.all([
+      view<EpochDetail>("get_epoch", { epoch_id: id }),
+      view<CurrentEpoch>("get_current_epoch"),
+    ]);
     setDetail(next);
+    setClock(current);
     if (accountId) {
       setMine(await view<UserEpochState>("get_user_epoch_state", { epoch_id: id, account_id: accountId }));
     }
@@ -33,7 +39,40 @@ export default function EpochPage() {
     void reload().catch((caught: unknown) => setError(caught instanceof Error ? caught.message : String(caught)));
   }, [reload]);
 
+  const ownsContract = accountId != null && accountId === CONTRACT_ID;
+  const nextToFinalize = clock?.next_epoch_to_finalize ?? null;
+  const ended = detail != null && clock != null && BigInt(clock.now_ns) >= BigInt(detail.end_ns);
+  const rewardWindowClosed = detail?.reward_claim_deadline_ns != null && clock != null && BigInt(clock.now_ns) >= BigInt(detail.reward_claim_deadline_ns);
+  const selfMove = ownsContract ? CONTRACT_ACCOUNT_NOTE : null;
+  const finalizeReason = !detail || !clock
+    ? "Reading this epoch from the contract."
+    : detail.finalized
+      ? "This epoch is already finalized."
+      : nextToFinalize !== id
+        ? `Epochs finalize in order. The next epoch is ${nextToFinalize}.`
+        : !ended
+          ? "This epoch has not ended."
+          : null;
+  const principalReason = selfMove
+    ?? (!detail?.finalized ? "This epoch is not finalized." : !accountId ? "Connect a wallet first." : mine?.principal_claim_open ? null : "No principal is waiting for this account.");
+  const rewardReason = selfMove
+    ?? (!detail?.finalized ? "This epoch is not finalized." : !accountId ? "Connect a wallet first." : detail.rewards_swept ? "Unclaimed rewards were already swept." : mine?.rewards_claim_open ? null : "No rewards are open for this account.");
+  const sweepReason = !detail || !clock
+    ? "Reading this epoch from the contract."
+    : !detail.finalized
+      ? "This epoch is not finalized."
+      : detail.rewards_swept
+        ? "Unclaimed rewards were already swept."
+        : !rewardWindowClosed
+          ? "The reward claim window is still open."
+          : null;
+
   async function call(method: string) {
+    const blocked = method === "finalize_epoch" ? finalizeReason : method === "claim_principal" ? principalReason : method === "claim_epoch_rewards" ? rewardReason : sweepReason;
+    if (blocked) {
+      setReport({ ok: false, hash: null, method, detail: blocked });
+      return;
+    }
     const result = await wallet.send(method, { epoch_id: id }, DEPOSIT_JOIN);
     setReport(result);
     if (result.ok) {
@@ -80,23 +119,30 @@ export default function EpochPage() {
         </>
       ) : null}
 
+      {nextToFinalize && nextToFinalize !== id ? (
+        <p className="text-sm font-semibold text-forest">
+          <Link href={`/epoch/${nextToFinalize}`}>The next epoch to finalize is {nextToFinalize}.</Link>
+        </p>
+      ) : null}
+      {selfMove ? <p className="rounded-2xl bg-pink/40 px-4 py-3 text-sm">{selfMove}</p> : null}
       <div className="grid gap-3 md:grid-cols-2">
-        <EpochAction copy="Anyone can finalize the next finished epoch, once, in order." disabled={wallet.busy} onClick={() => void call("finalize_epoch")} title="Finalize" />
-        <EpochAction copy="Returns the original 1,000 PAPER after settlement. Principal does not expire." disabled={wallet.busy} onClick={() => void call("claim_principal")} title="Claim principal" />
-        <EpochAction copy="Pays the equal mint share and the equal survivor bonus while the 30-day window is open." disabled={wallet.busy} onClick={() => void call("claim_epoch_rewards")} title="Claim rewards" />
-        <EpochAction copy="After the reward window, burns unclaimed mint and bonus. Principal is never swept." disabled={wallet.busy} onClick={() => void call("sweep_unclaimed_epoch_rewards")} title="Sweep expired rewards" warn />
+        <EpochAction copy="Anyone can finalize the next finished epoch, once, in order." disabled={wallet.busy} onClick={() => void call("finalize_epoch")} reason={finalizeReason} title="Finalize" />
+        <EpochAction copy="Returns the original 1,000 PAPER after settlement. Principal does not expire." disabled={wallet.busy} onClick={() => void call("claim_principal")} reason={principalReason} title="Claim principal" />
+        <EpochAction copy="Pays the equal mint share and the equal survivor bonus while the 30-day window is open." disabled={wallet.busy} onClick={() => void call("claim_epoch_rewards")} reason={rewardReason} title="Claim rewards" />
+        <EpochAction copy="After the reward window, burns unclaimed mint and bonus. Principal is never swept." disabled={wallet.busy} onClick={() => void call("sweep_unclaimed_epoch_rewards")} reason={sweepReason} title="Sweep expired rewards" warn />
       </div>
       <Report report={report} />
     </section>
   );
 }
 
-function EpochAction({ title, copy, onClick, disabled, warn }: { title: string; copy: string; onClick: () => void; disabled: boolean; warn?: boolean }) {
+function EpochAction({ title, copy, reason, onClick, disabled, warn }: { title: string; copy: string; reason: string | null; onClick: () => void; disabled: boolean; warn?: boolean }) {
   return (
     <article className="card flex flex-col p-5">
       <h2 className="font-display text-3xl">{title}</h2>
       <p className="mt-2 flex-1 text-sm text-ink/70">{copy}</p>
-      <button className={warn ? "btn mt-4 border border-orange bg-white text-orange" : "btn btn-pink mt-4"} disabled={disabled} onClick={onClick} type="button">{title}</button>
+      {reason ? <p className="mt-3 text-sm font-semibold text-ink">{reason}</p> : null}
+      <button className={warn ? "btn mt-4 border border-orange bg-white text-orange" : "btn btn-pink mt-4"} disabled={disabled || reason != null} onClick={onClick} type="button">{title}</button>
     </article>
   );
 }

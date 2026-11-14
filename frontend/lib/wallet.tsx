@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { CONTRACT_ID, DEPOSIT_JOIN, GAS, MAINNET_REFUSED } from "./config";
 import { confirmTransaction } from "./chain";
+import { contractAccountMove, readableTxError } from "./tx-error";
 
 export type TxReport = {
   ok: boolean;
@@ -37,6 +38,16 @@ function walletSaidSuccess(outcome: unknown): boolean {
   const status = (outcome as { status?: unknown }).status;
   if (!status || typeof status !== "object") return false;
   return "SuccessValue" in status && !("Failure" in status);
+}
+
+function rawMessage(caught: unknown): string {
+  if (caught instanceof Error) return caught.message;
+  if (typeof caught === "string") return caught;
+  try {
+    return JSON.stringify(caught);
+  } catch {
+    return String(caught);
+  }
 }
 
 function remember(report: TxReport, accountId: string) {
@@ -110,6 +121,11 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     if (MAINNET_REFUSED) return { ok: false, hash: null, method, detail: "This MVP refuses mainnet." };
     if (!receiverId) return { ok: false, hash: null, method, detail: "No contract id is configured. No transaction was sent." };
     if (!connector || !accountId) return { ok: false, hash: null, method, detail: "Connect a Testnet wallet first. No transaction was sent." };
+    const blocked = contractAccountMove(accountId, method);
+    if (blocked) {
+      setError(blocked);
+      return { ok: false, hash: null, method, detail: blocked };
+    }
     setBusy(true);
     setError(null);
     try {
@@ -121,7 +137,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       });
       return await finish(method, outcome, accountId);
     } catch (caught) {
-      const detail = caught instanceof Error ? caught.message : String(caught);
+      const detail = readableTxError(rawMessage(caught));
       setError(detail);
       return { ok: false, hash: null, method, detail };
     } finally {
@@ -134,6 +150,11 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     if (MAINNET_REFUSED) return { ok: false, hash: null, method, detail: "This MVP refuses mainnet." };
     if (!CONTRACT_ID || !connector || !accountId) {
       return { ok: false, hash: null, method, detail: "Connect a wallet to a configured Testnet contract first." };
+    }
+    const blocked = calls.map((call) => contractAccountMove(accountId, call.method)).find((note) => note);
+    if (blocked) {
+      setError(blocked);
+      return { ok: false, hash: null, method, detail: blocked };
     }
     setBusy(true);
     setError(null);
@@ -148,7 +169,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       });
       return await finish(method, outcomes[outcomes.length - 1], accountId);
     } catch (caught) {
-      const detail = caught instanceof Error ? caught.message : String(caught);
+      const detail = readableTxError(rawMessage(caught));
       setError(detail);
       return { ok: false, hash: null, method, detail };
     } finally {
