@@ -31,7 +31,6 @@ export function HomeExperience() {
   const [history, setHistory] = useState<EpochDetail[]>([]);
   const [currentDetail, setCurrentDetail] = useState<EpochDetail | null>(null);
   const [economics, setEconomics] = useState<Economics | null>(null);
-  const [balance, setBalance] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(contractReady());
 
   useEffect(() => {
@@ -77,17 +76,37 @@ export function HomeExperience() {
     };
   }, []);
 
-  useEffect(() => {
-    if (!wallet.accountId || contractReady()) return;
-    void view<string>("ft_balance_of", { account_id: wallet.accountId }).then(setBalance).catch(() => setBalance(null));
-  }, [wallet.accountId]);
-
   const last = history.at(-1) ?? null;
 
   return (
     <div className="px-3 pb-16 md:px-5">
       <section className="mx-auto w-full">
         <div className="hero-card">
+          <header className="hero-nav">
+            <nav aria-label="Primary" className="hero-nav-side hero-nav-left">
+              <Link href="/commitment">Commit</Link>
+              <Link href="/paperhands-index">Epochs</Link>
+              <Link href="/sponsors">Sponsors</Link>
+            </nav>
+            <Link aria-label="PaperHands home" className="hero-mark" href="/">
+              <span aria-hidden className="hero-dots"><i /><i /><i /><i /><i /></span>
+              PAPERHANDS
+            </Link>
+            <nav aria-label="More" className="hero-nav-side hero-nav-right">
+              <Link href="/missions">Missions</Link>
+              <Link href="/treasury">Treasury</Link>
+              {wallet.accountId ? (
+                <>
+                  <Link href={`/profile/${wallet.accountId}`}>Profile</Link>
+                  <button onClick={() => void wallet.disconnect()} type="button">Disconnect</button>
+                </>
+              ) : (
+                <button disabled={wallet.busy} onClick={() => void wallet.connect()} type="button">
+                  {wallet.busy ? "Connecting" : "Connect"}
+                </button>
+              )}
+            </nav>
+          </header>
           <div className="hero-hands" aria-hidden>
             <div className="hand hand-paper" data-reveal="hand" style={wait(0.15)}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -99,7 +118,7 @@ export function HomeExperience() {
             </div>
           </div>
           <div className="hero-copy relative z-10 mx-auto max-w-3xl text-center" data-reveal="soft">
-            <p className="text-sm font-semibold text-lime">Don&apos;t just hold. Prove it.</p>
+            <p className="text-sm font-semibold text-cream">Don&apos;t just hold. Prove it.</p>
             <h1 className="display mt-4">
               Weak hands.
               <br />
@@ -109,32 +128,11 @@ export function HomeExperience() {
               Lock your PAPER. Stand with the community. Let your commitment speak on-chain.
             </p>
             <div className="toggle">
-              <Link className="on" href="/commitment">Join Diamond Commitment</Link>
+              <Link className="on" href="/commitment">Join this epoch</Link>
               <Link className="off" href="/sponsors">Sponsor a campaign</Link>
             </div>
-            <p className="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-cream/80">
-              A sponsor campaign is a second 1,000 PAPER lock. It does not extend the Diamond streak.
-            </p>
-            <p className="mt-4 text-sm text-cream/80">
-              {wallet.accountId
-                ? `Connected ${wallet.accountId}. Balance ${balance ? paper(balance) : "unread"}.`
-                : "Wallet not connected. Connect Testnet before you join."}
-            </p>
+            {wallet.error ? <p className="mt-4 text-sm text-pink">{wallet.error}</p> : null}
           </div>
-          <dl className="hero-stats relative z-10 mx-auto mt-8 grid max-w-4xl gap-3 text-left sm:grid-cols-4">
-            <HeroStat label="Current epoch" value={epoch ? `${epoch.epoch_id} · ${epoch.phase}` : "—"} />
-            <HeroStat label="Last retention" value={last?.retention_bps != null ? `${(last.retention_bps / 100).toFixed(2)}%` : "not settled"} />
-            <HeroStat label="Active this epoch" value={currentDetail ? String(currentDetail.active_participants) : "—"} />
-            <HeroStat label="Current streak" value={epoch ? String(epoch.current_streak) : "—"} />
-          </dl>
-          <p className="relative z-10 mt-4 px-4 text-center text-sm text-cream/75">
-            {error
-              ? error
-              : epoch
-                ? `${durationLabel(epoch.epoch_duration_ns)} epoch · ${durationLabel(epoch.entry_window_ns)} entry`
-                : "Reading the current epoch."}
-          </p>
-          <p className="relative z-10 mt-2 px-4 text-center text-sm text-cream/75">{provisionalLabel(currentDetail)}</p>
         </div>
       </section>
 
@@ -146,6 +144,7 @@ export function HomeExperience() {
           </div>
           <p className="eyebrow mt-2">Live</p>
           <h2 className="display-md mt-3 text-center">This epoch</h2>
+          {error ? <p className="mt-3 text-sm text-orange">{error}</p> : null}
         </div>
         <div className="mt-8 grid gap-4 md:grid-cols-3">
           <Metric delay={0} label="Original participants" value={last?.original_participants?.toString() ?? "not finalized"} note="Frozen when the entry window closed" />
@@ -200,25 +199,8 @@ export function HomeExperience() {
   );
 }
 
-function provisionalLabel(detail: EpochDetail | null) {
-  if (!detail) return "Provisional result unread until the current epoch loads.";
-  if (detail.finalized) return "This epoch is already finalized. The retention above is the settled result.";
-  if (detail.projected_success === true) return "Provisional: on track. This is not a finalized result.";
-  if (detail.projected_success === false) return "Provisional: not on track. This is not a finalized result.";
-  return "Provisional result is not available until the entry window closes.";
-}
-
 function wait(seconds: number): CSSProperties {
   return { "--delay": `${seconds}s` } as CSSProperties;
-}
-
-function HeroStat({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-2xl bg-[#04261ccc] px-3 py-3">
-      <dt className="text-xs uppercase tracking-wide text-cream/70">{label}</dt>
-      <dd className="mt-1 text-lg font-semibold">{value}</dd>
-    </div>
-  );
 }
 
 function Metric({ label, value, note, delay = 0 }: { label: string; value: string; note: string; delay?: number }) {
