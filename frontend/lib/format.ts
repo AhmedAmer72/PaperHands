@@ -9,13 +9,18 @@ export function paper(units: string | number | null | undefined): string {
   }
 }
 
-export function durationLabel(ns: string | undefined, kind: string | undefined): string {
-  if (!ns) return "duration unknown until the contract answers";
-  if (kind === "demo-testnet" && ns === "3600000000000") return "1 hour (demo-testnet, not a 7-day production epoch)";
-  if (kind === "demo-testnet" && ns === "600000000000") return "10 minutes (demo entry window)";
-  if (kind === "production" && ns === "604800000000000") return "7 days (production)";
-  if (kind === "production" && ns === "86400000000000") return "24 hours (production entry)";
+export function durationLabel(ns: string | undefined): string {
+  if (!ns) return "—";
+  if (ns === "3600000000000") return "1 hour";
+  if (ns === "600000000000") return "10 minutes";
+  if (ns === "604800000000000") return "7 days";
+  if (ns === "86400000000000") return "24 hours";
   return `${ns} ns`;
+}
+
+export function clockLabel(demo: boolean | undefined): string {
+  if (demo === undefined) return "—";
+  return demo ? "1 hour · entry 10 minutes" : "7 days · entry 24 hours";
 }
 
 export function timestampLabel(ns: string | null | undefined): string {
@@ -42,13 +47,3 @@ export function remaining(nowNs: string, endNs: string): string {
   }
 }
 
-export function deploymentBanner(kind: string | undefined, faucet: boolean | undefined): string {
-  if (kind === "demo-testnet") {
-    return "Demo deployment. Epochs last 1 hour and the entry window is 10 minutes. This is not a seven-day production epoch. The faucet is on and is not Sybil-proof.";
-  }
-  if (kind === "production") {
-    return "Production parameters: 7-day epochs, 24-hour entry, faucet off. This build has not deployed it.";
-  }
-  if (faucet) return "Faucet flag is on. Treat the duration as whatever the contract reports, not as a 7-day production epoch.";
-  return "Deployment kind has not been read from a contract.";
-}

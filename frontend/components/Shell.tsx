@@ -8,20 +8,10 @@ import { WalletProvider, useWallet } from "@/lib/wallet";
 
 const PRIMARY = [
   ["/commitment", "Commit"],
+  ["/paperhands-index", "Epochs"],
   ["/sponsors", "Sponsors"],
   ["/missions", "Missions"],
   ["/treasury", "Treasury"],
-];
-
-const MORE = [
-  ["/", "Home"],
-  ["/how-it-works", "How it works"],
-  ["/paperhands-index", "Index"],
-  ["/economy", "Economy"],
-  ["/explorer", "Activity"],
-  ["/lab", "Lab"],
-  ["/rules", "Rules"],
-  ["/faq", "FAQ"],
 ];
 
 function current(path: string, href: string) {
@@ -47,11 +37,9 @@ function Bar() {
   const path = usePathname();
   const wallet = useWallet();
   const [open, setOpen] = useState(false);
-  const [more, setMore] = useState(false);
 
   useEffect(() => {
     setOpen(false);
-    setMore(false);
   }, [path]);
 
   return (
@@ -67,14 +55,6 @@ function Bar() {
             {PRIMARY.map(([href, label]) => (
               <NavLink href={href} key={href} label={label} path={path} />
             ))}
-            <button
-              aria-expanded={more}
-              className="min-h-11 rounded-full px-3 py-2 text-cream/90 hover:bg-white/10"
-              onClick={() => setMore((value) => !value)}
-              type="button"
-            >
-              More
-            </button>
           </nav>
           <div className="ml-auto flex items-center gap-2">
             {wallet.accountId ? (
@@ -102,40 +82,20 @@ function Bar() {
             </button>
           </div>
         </div>
-        {more ? (
-          <nav aria-label="More pages" className="mx-auto mt-2 hidden max-w-[1200px] flex-wrap gap-1 rounded-[1.5rem] bg-forest px-3 py-2 text-sm text-cream lg:flex">
-            {MORE.map(([href, label]) => (
-              <NavLink href={href} key={href} label={label} onNavigate={() => setMore(false)} path={path} />
-            ))}
-          </nav>
-        ) : null}
         {open ? (
-          <nav aria-label="Site" className="mx-auto mt-2 grid max-w-[1200px] gap-4 rounded-[1.5rem] bg-forest p-4 text-cream lg:hidden" id="site-menu">
-            <div>
-              <p className="px-3 pb-1 text-xs font-semibold text-pink">Act</p>
-              <div className="grid gap-1">
-                {PRIMARY.map(([href, label]) => (
-                  <NavLink href={href} key={href} label={label} onNavigate={() => setOpen(false)} path={path} />
-                ))}
-              </div>
-            </div>
-            <div>
-              <p className="px-3 pb-1 text-xs font-semibold text-pink">Read</p>
-              <div className="grid gap-1">
-                {MORE.map(([href, label]) => (
-                  <NavLink href={href} key={href} label={label} onNavigate={() => setOpen(false)} path={path} />
-                ))}
-                {wallet.accountId ? (
-                  <NavLink href={`/profile/${wallet.accountId}`} label="Your profile" onNavigate={() => setOpen(false)} path={path} />
-                ) : null}
-              </div>
-            </div>
+          <nav aria-label="Site" className="mx-auto mt-2 grid max-w-[1200px] gap-1 rounded-[1.5rem] bg-forest p-4 text-cream lg:hidden" id="site-menu">
+            {PRIMARY.map(([href, label]) => (
+              <NavLink href={href} key={href} label={label} onNavigate={() => setOpen(false)} path={path} />
+            ))}
+            {wallet.accountId ? (
+              <NavLink href={`/profile/${wallet.accountId}`} label="Your profile" onNavigate={() => setOpen(false)} path={path} />
+            ) : null}
           </nav>
         ) : null}
       </header>
       <div className="mx-auto flex max-w-[1200px] flex-wrap items-center gap-x-4 gap-y-1 px-5 pt-3 text-xs text-ink/70">
         <p>
-          {MAINNET_REFUSED ? "Mainnet is refused by this build." : `Network ${NETWORK}. The faucet is not Sybil-proof.`}
+          {MAINNET_REFUSED ? "Mainnet is refused by this build." : `Network ${NETWORK}.`}
         </p>
         {wallet.accountId ? <p className="max-w-full truncate" translate="no">{wallet.accountId}</p> : <p>Wallet not connected.</p>}
         <details className="min-w-0">

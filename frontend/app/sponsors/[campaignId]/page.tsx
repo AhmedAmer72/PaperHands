@@ -7,7 +7,7 @@ import { ConfirmAction, type ConfirmDetails } from "@/components/ConfirmAction";
 import { PageHead } from "@/components/PageChrome";
 import { Report } from "@/components/Report";
 import { CONTRACT_ID, ONE_YOCTO, SPONSOR_CONTRACT_ID } from "@/lib/config";
-import { paper } from "@/lib/format";
+import { clockLabel, paper } from "@/lib/format";
 import { type TxReport, useWallet } from "@/lib/wallet";
 import { type AccountingView, type CampaignView, type ParticipantView, campaign, campaignBooks, participant } from "@/lib/v3";
 
@@ -67,14 +67,14 @@ export default function CampaignPage() {
   return (
     <section className="space-y-8">
       <PageHead
-        eyebrow={item?.demo_clock ? "Demo campaign" : "Campaign"}
+        eyebrow="Campaign"
         lede={item?.description || "Campaign terms are read from SponsorHub."}
         title={item?.name || `Campaign ${id}`}
       />
       {error ? <p className="card p-5 text-sm">{error}</p> : null}
       {item ? (
         <article className="card grid gap-2 p-5 text-sm">
-          <p>State {item.state}{item.success === null ? "" : item.success ? " · success" : " · failed"}</p>
+          <p>State {item.state} · {clockLabel(item.demo_clock)}{item.success === null ? "" : item.success ? " · success" : " · failed"}</p>
           <p>Sponsor {item.sponsor_id}</p>
           <p>Contract {SPONSOR_CONTRACT_ID} · id {item.campaign_id}</p>
           <p>Reward deposited {paper(item.reward_amount)} · commitment {paper(item.commitment_amount)}</p>

@@ -6,7 +6,7 @@ import { ConfirmAction, type ConfirmDetails } from "@/components/ConfirmAction";
 import { PageHead } from "@/components/PageChrome";
 import { Report } from "@/components/Report";
 import { CONTRACT_ID, ONE_YOCTO, SPONSOR_CONTRACT_ID } from "@/lib/config";
-import { paper } from "@/lib/format";
+import { clockLabel, paper } from "@/lib/format";
 import { type TxReport, useWallet } from "@/lib/wallet";
 import { type AccountingView, type CampaignView, campaign, campaignBooks } from "@/lib/v3";
 
@@ -73,7 +73,7 @@ export default function ManageCampaignPage() {
       {error ? <p className="card p-5 text-sm">{error}</p> : null}
       {item && books ? (
         <article className="card grid gap-2 p-5 text-sm">
-          <p>State {item.state} · preset {item.preset}{item.demo_clock ? " · labelled demo" : ""}</p>
+          <p>State {item.state} · {clockLabel(item.demo_clock)}</p>
           <p>Funded {paper(item.reward_amount)} · assets {paper(books.assets)}</p>
           <p>Distributed or still claimable sponsor reward {paper(books.sponsor_reward_liability)}</p>
           <p>Refundable {paper(books.refund_liability)} · dust recorded {paper(books.dust_recorded)}</p>
